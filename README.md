@@ -1,3 +1,3 @@
-# ME-Illumination
+# Hamiltonian-MI
 
-Using MAP-Elites to illuminate theoretical bounds on Hamiltonian inversion for the purpose of evolving information-dense control fields.
+Using Hamiltonian encoding to identify mechanisms in the control of qunatum dymanimcs (Mitra, Identifying mechanisms in the control of quantum dynamics through Hamiltonian encoding)
