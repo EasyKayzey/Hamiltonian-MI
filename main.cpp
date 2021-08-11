@@ -207,21 +207,27 @@ vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, 
 */
 
 vector<double> get_field(const FGenome& epsilon) {
-    throw runtime_error("Not implemented");
-    // vector<double> eps_inter(N_T);
-    // for (int i = 0; i < N_T; ++i) {
-    //     eps_inter[i] = 0;
-    //     double t_i = (i + 0.5) * DELTA_T;
-    //     int c = 0;
-    //     for (int l = 1; l < DIM; ++l) {
-    //         for (int m = 0; m < l; ++m) {
-    //             eps_inter[i] += epsilon[c].first * sin(omega[c] * t_i + epsilon[c].second);
-    //             ++c;
-    //         }
-    //     }
-    //     eps_inter[i] *= envelope_funct(t_i);
-    // }
-    // return eps_inter;
+    // throw runtime_error("Not implemented");
+    array<double, L> omega;
+
+    for (int l = 1, c = 0; l < DIM; ++l)
+        for (int m = 0; m < l; ++m)
+            omega[c++] = (H0D(l) - H0D(m)).real() / HBAR;
+    
+    vector<double> eps_inter(N_T);
+    for (int i = 0; i < N_T; ++i) {
+        eps_inter[i] = 0;
+        double t_i = (i + 0.5) * DELTA_T;
+        int c = 0;
+        for (int l = 1; l < DIM; ++l) {
+            for (int m = 0; m < l; ++m) {
+                eps_inter[i] += epsilon[c].first * sin(omega[c] * t_i + epsilon[c].second);
+                ++c;
+            }
+        }
+        eps_inter[i] *= envelope_funct(t_i);
+    }
+    return eps_inter;
 }
 
 template <class T, class F> void print_vec(vector<vector<T>> vec, ofstream& outfile, F lambda) {
