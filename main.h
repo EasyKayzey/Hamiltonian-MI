@@ -144,10 +144,10 @@ void fft(CArray &x)
 			x[b] = t;
 		}
 	}
-	// Normalize (This section make it not working correctly)
-	Complex f = 1.0 / sqrt(N);
-	for (unsigned int i = 0; i < N; i++)
-		x[i] *= f;
+	// // Normalize (This section make it not working correctly)
+	// Complex f = 1.0 / sqrt(N);
+	// for (unsigned int i = 0; i < N; i++)
+	// 	x[i] *= f;
 }
  
 // inverse fft (in-place)

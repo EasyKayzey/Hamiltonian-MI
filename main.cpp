@@ -100,8 +100,12 @@ int main(int argc, char** argv) {
         }
         ifft(tfft);
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
-        for (auto& d : tfft)
-            cout << norm(d) << ' ';
+        // for (auto& d : tfft)
+        //     cout << norm(d) << ' ';
+        for (int k = 0; k < ORD_R / 2; ++k) {
+            if (norm(tfft[k]) > 0.01)
+                cout << k << ": " << norm(tfft[k]) << endl;
+        }
         cout << endl << "Sum of values: " << tfft.sum() << endl;
     }
 
