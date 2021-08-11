@@ -1,6 +1,6 @@
 #include "main.h"
 
-double T = 4000, DELTA_T, N_T_double = 250;
+double T = 20000, DELTA_T, N_T_double = 1200;
 int N_T;
 int ORD_R = 128;
 EMatrix mu_t_upper;
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
             tfft[j] = order_results[j][ii];
         }
         ifft(tfft);
-        cout << "\nFFT for 1 to " << i << ':' << endl;
+        cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
         for (auto& d : tfft)
             cout << norm(d) << ' ';
         cout << endl << "Sum of values: " << tfft.sum() << endl;
