@@ -45,7 +45,7 @@ typedef Matrix<Complex, DIM, 1> EVector;
 typedef Matrix<Complex, 1, DIM> ECovector;
 typedef Matrix<Complex, Dynamic, 1> TVector;
 typedef Matrix<double, Dynamic, 1> RTVector;
-typedef array<double, N_OBS> OArr;
+typedef array<Complex, N_OBS> OArr;
 typedef array<double, DIM> DArr;
 typedef array<pair<double, double>, L> FGenome;
 typedef mt19937 rng;

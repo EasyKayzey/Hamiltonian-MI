@@ -167,7 +167,7 @@ OArr evolve_initial(const vector<double>& epsilon, const EMatrix& mu, const EVec
     OArr samples{};
     for (int i = 0; i < N_TO; ++i)
         for (int j = 0; j < DIM; ++j)
-            samples[i * DIM + j] = (anal_pop[j] * it[(i + 1) * N_T / N_TO]).squaredNorm();
+            samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
     return samples;
 }
 
