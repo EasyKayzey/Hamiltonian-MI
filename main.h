@@ -58,8 +58,7 @@ EMatrix to_full_matrix(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial(const vector<double>& epsilon, const EMatrix& CP, const EMatrix& PdC, const EMatrix& PdCCP,
-                    const EVector& lambda, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
+OArr evolve_initial(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
 
 Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 
