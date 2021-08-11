@@ -99,10 +99,10 @@ int main(int argc, char** argv) {
             tfft[j] = order_results[j][ii];
         }
         ifft(tfft);
-        cout << "FFT for 1 to " << i << ':' << endl;
+        cout << "\nFFT for 1 to " << i << ':' << endl;
         for (auto& d : tfft)
             cout << norm(d) << ' ';
-        cout << endl << endl;
+        cout << endl << "Sum of values: " << tfft.sum() << endl;
     }
 
 }
