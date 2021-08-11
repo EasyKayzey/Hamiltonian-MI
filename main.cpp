@@ -49,10 +49,12 @@ int main(int argc, char** argv) {
 #define USE_FIELD_FILE true
 #ifdef USE_FIELD_FILE
     FGenome field_genome{};
+    // string ffn = string(argv[1]);
+    string ffn = "field";
     {
-        ifstream field_file(path + string(argv[1]) + ".txt");
+        ifstream field_file(path + ffn + ".txt");
         if (field_file.good()) {
-            cout << "Using field from " << argv[1] << ".txt" << endl;
+            cout << "Using field from " << ffn << ".txt" << endl;
             try {
                 int al;
                 field_file >> al;
