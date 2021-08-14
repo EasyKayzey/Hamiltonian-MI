@@ -15,6 +15,8 @@
 #include <atomic>
 #include "Eigen/Core"
 #include "Eigen/Eigenvalues"
+#include "Eigen/LU"
+#include "unsupported/Eigen/MatrixFunctions"
 #include "omp.h"
 
 #if !(defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64))
