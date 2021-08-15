@@ -1,8 +1,9 @@
 #include "main.h"
+#include "omp.h"
 
 double T = 20000, DELTA_T, N_T_double = 1200;
 int N_T;
-int ORD_R = 128;
+int ORD_R = 512;
 EMatrix mu_t_upper;
 EVector H0D;
 EDMatrix C;
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
 #endif
 
 
+    cout << time(nullptr) << endl;
     vector<OArr> order_results(ORD_R);
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ORD_R; ++s) {
@@ -92,8 +94,9 @@ int main(int argc, char** argv) {
         double g = 2 * M_PI * s / ORD_R;
         Complex m = polar(1., g);
         mu_upper *= m;
-        order_results[s] = evolve_initial(field, to_full_matrix(mu_upper), psi_i, anal_pop);
+        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix(mu_upper), psi_i, anal_pop);
     }
+    cout << time(nullptr) << endl;
 
     for (int i = 0; i < DIM; ++i) {
         int ii = i + DIM;
@@ -148,22 +151,23 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     return {{CP, PdC}, lambda};
 }
 
-OArr evolve_initial(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
-    auto diag_ret = diag_vec(mu, C);
-    EVector lambda = diag_ret.second;       
-    EMatrix CP = diag_ret.first.first;
-    EMatrix PdC = diag_ret.first.second;
-    EMatrix PdCCP = PdC * CP;
+OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
+    // auto diag_ret = diag_vec(mu, C);
+    // EVector lambda = diag_ret.second;       
+    // EMatrix CP = diag_ret.first.first;
+    // EMatrix PdC = diag_ret.first.second;
+    // EMatrix PdCCP = PdC * CP;
+    EDMatrix CC = C.toDenseMatrix().diagonal().array().pow(2).matrix().asDiagonal();
 
-    vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
+    vector<EMatrix, aligned_allocator<EMatrix>> Ex(N_T);
     for (int i = 0; i < N_T; ++i)
-        E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
-
+        Ex[i] = (1i * DELTA_T / HBAR * mu * epsilon[i]).exp();
+    
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
-    it[0] = PdC * psi_i;
+    it[0] = C * psi_i;
     for (int i = 1; i < N_T; ++i)
-        it[i] = PdCCP * (E[i - 1] * it[i - 1]);
-    it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
+        it[i] = CC * (Ex[i - 1] * it[i - 1]);
+    it[N_T] = C * (Ex[N_T - 1] * it[N_T - 1]);
 
     OArr samples{};
     for (int i = 0; i < N_TO; ++i)
