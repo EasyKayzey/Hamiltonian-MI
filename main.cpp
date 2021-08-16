@@ -103,15 +103,17 @@ int main(int argc, char** argv) {
         CArray tfft(ORD_R);
         for (int j = 0; j < ORD_R; ++j) {
             tfft[j] = order_results[j][ii];
+            if (psi_i[i] == 1.)
+                tfft[j] -= 1;
         }
         ifft(tfft);
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
-        for (auto& d : tfft)
-            cout << norm(d) << ' ';
-        // for (int k = 0; k < ORD_R / 2; ++k) {
-        //     if (norm(tfft[k]) > 0.01)
-        //         cout << k << ": " << norm(tfft[k]) << endl;
-        // }
+        // for (auto& d : tfft)
+        //     cout << norm(d) << ' ';
+        for (int k = 0; k < ORD_R; ++k) {
+            if (norm(tfft[k]) > 0.01)
+                cout << k << ": " << norm(tfft[k]) << endl;
+        }
         cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << norm(tfft.sum()) << endl;
     }
 
