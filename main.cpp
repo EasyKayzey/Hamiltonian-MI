@@ -151,6 +151,30 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     return {{CP, PdC}, lambda};
 }
 
+OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
+    auto diag_ret = diag_vec(mu, C);
+    EVector lambda = diag_ret.second;       
+    EMatrix CP = diag_ret.first.first;
+    EMatrix PdC = diag_ret.first.second;
+    EMatrix PdCCP = PdC * CP;
+
+    vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
+    for (int i = 0; i < N_T; ++i)
+        E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
+
+    vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
+    it[0] = PdC * psi_i;
+    for (int i = 1; i < N_T; ++i)
+        it[i] = PdCCP * (E[i - 1] * it[i - 1]);
+    it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
+
+    OArr samples{};
+    for (int i = 0; i < N_TO; ++i)
+        for (int j = 0; j < DIM; ++j)
+            samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
+    return samples;
+}
+
 OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
     // auto diag_ret = diag_vec(mu, C);
     // EVector lambda = diag_ret.second;       
