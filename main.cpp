@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ORD_R; ++s) {
         EMatrix mu_upper = mu_t_upper;
-        double g = 2 * M_PI * s / ORD_R;
+        double g = -2 * M_PI * s / ORD_R;
         Complex m = polar(1., g);
         mu_upper *= m;
         order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix(mu_upper), psi_i, anal_pop);
