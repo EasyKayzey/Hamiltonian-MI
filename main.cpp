@@ -109,12 +109,12 @@ int main(int argc, char** argv) {
         ifft(tfft);
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
         // for (auto& d : tfft)
-        //     cout << norm(d) << ' ';
+        //     cout << abs(d) << ' ';
         for (int k = 0; k < ORD_R; ++k) {
-            if (norm(tfft[k]) > 0.01)
-                cout << k << ": " << norm(tfft[k]) << endl;
+            if (abs(tfft[k]) > 0.01)
+                cout << k << ": " << abs(tfft[k]) << endl;
         }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << norm(tfft.sum()) << endl;
+        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << endl;
     }
 
 }
