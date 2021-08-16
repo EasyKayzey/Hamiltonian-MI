@@ -103,8 +103,6 @@ int main(int argc, char** argv) {
         CArray tfft(ORD_R);
         for (int j = 0; j < ORD_R; ++j) {
             tfft[j] = order_results[j][ii];
-            if (psi_i[i] == 1.)
-                tfft[j] -= 1;
         }
         ifft(tfft);
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
