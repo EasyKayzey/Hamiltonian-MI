@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 20000, DELTA_T, N_T_double = 1200;
+double T = 4000, DELTA_T, N_T_double = 1200;
 int N_T;
 int ORD_R = 512;
 EMatrix mu_t_upper;
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
         anal_pop[i] = cur;
     }
 
-// #define USE_FIELD_FILE true
+#define USE_FIELD_FILE true
 #ifdef USE_FIELD_FILE
     FGenome field_genome{};
     // string ffn = string(argv[1]);
