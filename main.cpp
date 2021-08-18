@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
         double sum_of_probs = 0;
         for (CArray& fft : ffts)
             sum_of_probs += norm(fft.sum());
-        cout << "Sum of calculated sum-of-order probablities is " << sum_of_probs << endl;
+        cout << "\nSum of calculated sum-of-order probablities is " << sum_of_probs << endl;
     }
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
