@@ -118,8 +118,15 @@ int main(int argc, char** argv) {
             if (abs(tfft[k]) > 0.01)
                 cout << k << ": " << abs(tfft[k]) << endl;
         }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << endl;
+        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
         ffts.push_back(tfft);
+    }
+
+    {
+        double sum_of_probs = 0;
+        for (CArray& fft : ffts)
+            sum_of_probs += norm(fft.sum());
+        cout << "Sum of calculated sum-of-order probablities is " << sum_of_probs << endl;
     }
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
