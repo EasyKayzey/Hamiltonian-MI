@@ -3,7 +3,7 @@
 
 double T = 4000, DELTA_T, N_T_double = 1200;
 int N_T;
-int ORD_R = 512;
+int ORD_R = 2048;
 EMatrix mu_t_upper;
 EVector H0D;
 EDMatrix C;
