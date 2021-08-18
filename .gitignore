@@ -152,3 +152,5 @@ QCDATA*
 .vscode/*
 build/*
 main
+HMI*
+field.txt

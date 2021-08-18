@@ -40,15 +40,21 @@ const int N_TO = 2;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
 
+#define USE_LONG_DOUBLE true
+#ifdef USE_LONG_DOUBLE
+typedef complex<long double> Complex;
+typedef array<long double, DIM> DArr;
+#else
 typedef complex<double> Complex;
+typedef array<double, DIM> DArr;
+#endif
+typedef array<Complex, N_OBS> OArr;
 typedef Matrix<Complex, DIM, DIM> EMatrix;
 typedef DiagonalMatrix<Complex, DIM> EDMatrix;
 typedef Matrix<Complex, DIM, 1> EVector;
 typedef Matrix<Complex, 1, DIM> ECovector;
 typedef Matrix<Complex, Dynamic, 1> TVector;
 typedef Matrix<double, Dynamic, 1> RTVector;
-typedef array<Complex, N_OBS> OArr;
-typedef array<double, DIM> DArr;
 typedef array<pair<double, double>, L> FGenome;
 typedef mt19937 rng;
 
