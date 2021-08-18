@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
         ffts.push_back(tfft);
     }
 
-    ofstream outfile("HMI" + to_string(main_start_time) + "_" + ffn + ".txt", ofstream::trunc);
+    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R};
     double out_doubles[] = {T, HBAR};
@@ -141,25 +141,25 @@ int main(int argc, char** argv) {
 
     outfile << H0D.real().transpose() << endl;
 
-    cout << mu_t_upper + mu_t_upper.transpose() << endl;
+    outfile << mu_t_upper + mu_t_upper.transpose() << endl;
 
     outfile << psi_i.real().transpose() << endl;
 
     outfile << "Field:" << endl;
 
     for (double d : field)
-        cout << d << ' ';
-    cout << endl;
+        outfile << d << ' ';
+    outfile << endl;
 
     outfile << "Data:" << endl;
 
     for (CArray& arr : ffts) {
         for (Complex d : arr)
-            cout << d.real() << ' ';
-        cout << endl;
+            outfile << d.real() << ' ';
+        outfile << endl;
         for (Complex d : arr)
-            cout << d.imag() << ' ';
-        cout << endl;
+            outfile << d.imag() << ' ';
+        outfile << endl;
     }
 
     if (!outfile.good())
