@@ -129,12 +129,13 @@ int main(int argc, char** argv) {
 
     if (message.empty())
         message = "#";
-    outfile << "HMI1 " << 1 << ' ' << message;
+    outfile << "HMI1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
+    outfile << endl;
     for (double o : out_doubles)
         outfile << ' ' << o;
-    outfile << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << endl;
 
     outfile << "Preliminaries:" << endl;
 
