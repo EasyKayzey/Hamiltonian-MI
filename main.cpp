@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     string ffn;
     cout << "Field file name?" << endl;
     cin >> ffn;
-    if (ffn.empty())
+    if (ffn.empty() || ffn == "n")
         ffn = "field";
 
     {
@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
     }
     cout << time(nullptr) << endl;
 
+    vector<CArray> ffts;
     for (int i = 0; i < DIM; ++i) {
         int ii = i + DIM;
         CArray tfft(ORD_R);
@@ -118,7 +119,53 @@ int main(int argc, char** argv) {
                 cout << k << ": " << abs(tfft[k]) << endl;
         }
         cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << endl;
+        ffts.push_back(tfft);
     }
+
+    ofstream outfile("HMI" + to_string(main_start_time) + "_" + ffn + ".txt", ofstream::trunc);
+
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    double out_doubles[] = {T, HBAR, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+    if (message.empty())
+        message = "#";
+    outfile << "HMI1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    for (int o : out_ints)
+        outfile << ' ' << o;
+    outfile << endl;
+    for (double o : out_doubles)
+        outfile << ' ' << o;
+    outfile << endl;
+
+    outfile << "Preliminaries:" << endl;
+
+    outfile << H0D.real().transpose() << endl;
+
+    cout << mu_t_upper + mu_t_upper.transpose() << endl;
+
+    outfile << psi_i.real().transpose() << endl;
+
+    outfile << "Field:" << endl;
+
+    for (double d : field)
+        cout << d << ' ';
+    cout << endl;
+
+    outfile << "Data:" << endl;
+
+    for (CArray& arr : ffts) {
+        for (Complex d : arr)
+            cout << d.real() << ' ';
+        cout << endl;
+        for (Complex d : arr)
+            cout << d.imag() << ' ';
+        cout << endl;
+    }
+
+    if (!outfile.good())
+        cerr << "Writing failed." << endl;
+
+    outfile.close();
 
 }
 
