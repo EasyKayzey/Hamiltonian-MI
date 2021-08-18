@@ -124,8 +124,8 @@ int main(int argc, char** argv) {
 
     ofstream outfile("HMI" + to_string(main_start_time) + "_" + ffn + ".txt", ofstream::trunc);
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    double out_doubles[] = {T, HBAR, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R};
+    double out_doubles[] = {T, HBAR};
 
     if (message.empty())
         message = "#";
