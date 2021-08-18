@@ -51,7 +51,12 @@ int main(int argc, char** argv) {
 #ifdef USE_FIELD_FILE
     FGenome field_genome{};
     // string ffn = string(argv[1]);
-    string ffn = "field";
+    string ffn;
+    cout << "Field file name?" << endl;
+    cin >> ffn;
+    if (ffn.empty())
+        ffn = "field";
+
     {
         ifstream field_file(path + ffn + ".txt");
         if (field_file.good()) {

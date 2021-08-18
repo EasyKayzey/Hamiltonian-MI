@@ -25,7 +25,7 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define path "C:\\EZKZ\\ME-G1\\"
+#define path "C:\\EZKZ\\ABR-1\\"
 #elif defined(linux) || defined(_linux_) || defined(unix) || defined(_unix_) || defined(__unix__)
 #define path "./"
 #endif
