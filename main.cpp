@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD_R, ORD_RC};
     double out_doubles[] = {T, HBAR};
 
     if (message.empty())
@@ -282,11 +282,12 @@ OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& m
 
 vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, function<EMatrix(EMatrix, Complex)> modulate) {
     cout << time(nullptr) << endl;
-    vector<OArr> order_results(ORD_R);
+    int ord = hermitian ? ORD_RC : ORD_R;
+    vector<OArr> order_results(ord);
 #pragma omp parallel for default(shared)
-    for (int s = 0; s < ORD_R; ++s) {
+    for (int s = 0; s < ord; ++s) {
         EMatrix mu_upper = mu_t_upper;
-        double g = -2 * M_PI * s / ORD_R;
+        double g = -2 * M_PI * s / ord;
         Complex m = polar(1., g);
         if (hermitian)
             order_results[s] = evolve_initial_hermitian(epsilon, modulate(mu_upper, m), psi_i);
@@ -298,15 +299,15 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
     vector<CArray> ffts;
     for (int i = 0; i < DIM; ++i) {
         int ii = i + DIM;
-        CArray tfft(ORD_R);
-        for (int j = 0; j < ORD_R; ++j) {
+        CArray tfft(ord);
+        for (int j = 0; j < ord; ++j) {
             tfft[j] = order_results[j][ii];
         }
         ifft(tfft);
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
         // for (auto& d : tfft)
         //     cout << abs(d) << ' ';
-        for (int k = 0; k < ORD_R; ++k) {
+        for (int k = 0; k < ord; ++k) {
             if (abs(tfft[k]) > 0.01)
                 cout << k << ": " << abs(tfft[k]) << endl;
         }
