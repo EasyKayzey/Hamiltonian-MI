@@ -200,7 +200,7 @@ double envelope_funct(double t) {
 }
 
 EMatrix to_full_matrix_hermitian(EMatrix upper) {
-    return upper + upper.adjoint(); 
+    return (upper + upper.adjoint()).transpose(); // transpose is because upper triangle is backwards transitions 
 }
 
 EMatrix to_full_matrix_antihermitian(EMatrix upper) {
@@ -287,7 +287,7 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ord; ++s) {
         EMatrix mu_upper = mu_t_upper;
-        double g = -2 * M_PI * s / ord;
+        double g = 2 * M_PI * s / ord;
         Complex m = polar(1., g);
         if (hermitian)
             order_results[s] = evolve_initial_hermitian(epsilon, modulate(mu_upper, m), psi_i);
@@ -303,7 +303,8 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
         for (int j = 0; j < ord; ++j) {
             tfft[j] = order_results[j][ii];
         }
-        ifft(tfft);
+        fft(tfft);
+        tfft /= tfft.size();
         cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
         // for (auto& d : tfft)
         //     cout << abs(d) << ' ';
