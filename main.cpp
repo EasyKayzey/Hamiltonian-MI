@@ -98,9 +98,36 @@ int main(int argc, char** argv) {
     string ffn = "HARDCODED";
 #endif
 
-    vector<CArray> ffts = run_order_analysis(field, psi_i, false, [](EMatrix mu_u, Complex m) -> EMatrix {
-        return to_full_matrix_nonhermitian(mu_u * m);
-    });
+    map<pair<int, int>, pair<vector<CArray>, vector<CArray>>> ffts_map;
+    ffts_map[{0, 0}] = {
+        run_order_analysis(field, psi_i, false, [](EMatrix mu_u, Complex m) -> EMatrix {
+            return to_full_matrix_antihermitian(mu_u * m);
+        }), 
+        run_order_analysis(field, psi_i, true, [](EMatrix mu_u, Complex m) -> EMatrix {
+            return to_full_matrix_hermitian(mu_u * m);
+        })
+    };
+
+    for (int i = 0; i < DIM; ++i) {
+        for (int j = i + 1; j < DIM; ++j) {
+            if (mu_t_upper(i, j) != mu_t_upper(j, i)) {
+                ffts_map[{i + 1, j + 1}] = {
+                    run_order_analysis(field, psi_i, false, [&](EMatrix mu_u, Complex m) -> EMatrix {
+                        EMatrix tmp = mu_u;
+                        tmp(i, j) *= m;
+                        tmp(j, i) *= m;
+                        return to_full_matrix_antihermitian(tmp * m);
+                    }), 
+                    run_order_analysis(field, psi_i, true, [&](EMatrix mu_u, Complex m) -> EMatrix {
+                        EMatrix tmp = mu_u;
+                        tmp(i, j) *= m;
+                        tmp(j, i) *= m;
+                        return to_full_matrix_hermitian(tmp * m);
+                    })
+                };
+            }
+        }
+    }
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
 
@@ -109,7 +136,7 @@ int main(int argc, char** argv) {
 
     if (message.empty())
         message = "#";
-    outfile << "HMI1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "HMI1 " << 2 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
@@ -131,15 +158,32 @@ int main(int argc, char** argv) {
         outfile << d << ' ';
     outfile << endl;
 
-    outfile << "Data:" << endl;
-
-    for (CArray& arr : ffts) {
-        for (Complex d : arr)
-            outfile << d.real() << ' ';
-        outfile << endl;
-        for (Complex d : arr)
-            outfile << d.imag() << ' ';
-        outfile << endl;
+    for (auto& v : ffts_map) {
+        string name;
+        if (v.first.first == 0 && v.first.second == 0)
+            name = "Full";
+        else
+            name = to_string(v.first.first) + "-" + to_string(v.first.second);
+        outfile << name << " order_nonhermitian:" << endl;
+        vector<CArray>& ffts = v.second.first;
+        for (CArray& arr : ffts) {
+            for (Complex d : arr)
+                outfile << d.real() << ' ';
+            outfile << endl;
+            for (Complex d : arr)
+                outfile << d.imag() << ' ';
+            outfile << endl;
+        }        
+        outfile << name << " order_composite:" << endl;
+        ffts = v.second.second;
+        for (CArray& arr : ffts) {
+            for (Complex d : arr)
+                outfile << d.real() << ' ';
+            outfile << endl;
+            for (Complex d : arr)
+                outfile << d.imag() << ' ';
+            outfile << endl;
+        }
     }
 
     if (!outfile.good())
@@ -159,7 +203,7 @@ EMatrix to_full_matrix_hermitian(EMatrix upper) {
     return upper + upper.adjoint(); 
 }
 
-EMatrix to_full_matrix_nonhermitian(EMatrix upper) {
+EMatrix to_full_matrix_antihermitian(EMatrix upper) {
     return upper + upper.transpose(); 
 }
 
