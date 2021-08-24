@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         double g = -2 * M_PI * s / ORD_R;
         Complex m = polar(1., g);
         mu_upper *= m;
-        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix(mu_upper), psi_i, anal_pop);
+        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix_nonhermitian(mu_upper), psi_i, anal_pop);
     }
     cout << time(nullptr) << endl;
 
@@ -182,7 +182,11 @@ double envelope_funct(double t) {
     return exp(-30 * (2 * t / T - .5) * (2 * t / T - .5)) + exp(-30 * ((2 * t - T) / T - .5) * ((2 * t - T) / T - .5));
 }
 
-EMatrix to_full_matrix(EMatrix upper) {
+EMatrix to_full_matrix_hermitian(EMatrix upper) {
+    return upper + upper.adjoint(); 
+}
+
+EMatrix to_full_matrix_nonhermitian(EMatrix upper) {
     return upper + upper.transpose(); 
 }
 

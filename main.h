@@ -62,7 +62,8 @@ int main(int argc, char** argv);
 
 double envelope_funct(double t);
 
-EMatrix to_full_matrix(EMatrix upper);
+EMatrix to_full_matrix_hermitian(EMatrix upper);
+EMatrix to_full_matrix_nonhermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
