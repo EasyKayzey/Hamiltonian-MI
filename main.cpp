@@ -3,11 +3,14 @@
 
 double T = 20000, DELTA_T, N_T_double = 1200;
 int N_T;
-int ORD_R = 2048;
+int ORD_R = 512;
+int ORD_RC = 128;
+int main_start_time;
+
 EMatrix mu_t_upper;
 EVector H0D;
 EDMatrix C;
-int main_start_time;
+array<ECovector, DIM> anal_pop;
 
 // #define USE_FIELD_FILE
 int main(int argc, char** argv) {
@@ -46,7 +49,6 @@ int main(int argc, char** argv) {
     EVector psi_i = EVector::Zero();
     psi_i[0] = 1;
 
-    array<ECovector, DIM> anal_pop;
     for (int i = 0; i < DIM; ++i) {
         ECovector cur = ECovector::Zero();
         cur(i) = 1;
@@ -105,7 +107,7 @@ int main(int argc, char** argv) {
         double g = -2 * M_PI * s / ORD_R;
         Complex m = polar(1., g);
         mu_upper *= m;
-        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix_nonhermitian(mu_upper), psi_i, anal_pop);
+        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix_nonhermitian(mu_upper), psi_i);
     }
     cout << time(nullptr) << endl;
 
@@ -220,7 +222,7 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     return {{CP, PdC}, lambda};
 }
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
+OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i) {
     auto diag_ret = diag_vec(mu, C);
     EVector lambda = diag_ret.second;       
     EMatrix CP = diag_ret.first.first;
@@ -244,7 +246,7 @@ OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, 
     return samples;
 }
 
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
+OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i) {
     // auto diag_ret = diag_vec(mu, C);
     // EVector lambda = diag_ret.second;       
     // EMatrix CP = diag_ret.first.first;
@@ -268,6 +270,43 @@ OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& m
             samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
     return samples;
 }
+
+vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, function<EMatrix(EMatrix, Complex)>& modulate) {
+    cout << time(nullptr) << endl;
+    vector<OArr> order_results(ORD_R);
+#pragma omp parallel for default(shared)
+    for (int s = 0; s < ORD_R; ++s) {
+        EMatrix mu_upper = mu_t_upper;
+        double g = -2 * M_PI * s / ORD_R;
+        Complex m = polar(1., g);
+        if (hermitian)
+            order_results[s] = evolve_initial_hermitian(epsilon, modulate(mu_upper, m), psi_i);
+        else
+            order_results[s] = evolve_initial_nonhermitian(epsilon, modulate(mu_upper, m), psi_i);
+    }
+    cout << time(nullptr) << endl;
+
+    vector<CArray> ffts;
+    for (int i = 0; i < DIM; ++i) {
+        int ii = i + DIM;
+        CArray tfft(ORD_R);
+        for (int j = 0; j < ORD_R; ++j) {
+            tfft[j] = order_results[j][ii];
+        }
+        ifft(tfft);
+        cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
+        // for (auto& d : tfft)
+        //     cout << abs(d) << ' ';
+        for (int k = 0; k < ORD_R; ++k) {
+            if (abs(tfft[k]) > 0.01)
+                cout << k << ": " << abs(tfft[k]) << endl;
+        }
+        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
+        ffts.push_back(tfft);
+    }
+    return ffts;
+}
+
 
 complex<double> get_only_element(Matrix<complex<double>, -1, -1> scalar) {
     if (scalar.rows() > 1 || scalar.cols() > 1) {

@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <iomanip>
 #include <atomic>
+#include <valarray>
 #include "Eigen/Core"
 #include "Eigen/Eigenvalues"
 #include "Eigen/LU"
@@ -56,6 +57,7 @@ typedef Matrix<Complex, 1, DIM> ECovector;
 typedef Matrix<Complex, Dynamic, 1> TVector;
 typedef Matrix<double, Dynamic, 1> RTVector;
 typedef array<pair<double, double>, L> FGenome;
+typedef valarray<Complex> CArray;
 typedef mt19937 rng;
 
 int main(int argc, char** argv);
@@ -67,8 +69,10 @@ EMatrix to_full_matrix_nonhermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
+OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+
+vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, function<EMatrix(EMatrix, Complex)>& modulate);
 
 Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 
@@ -108,9 +112,6 @@ struct hash<array<T, N>>
 };
 
 // FFT stuff
-
-#include <valarray>
-typedef valarray<Complex> CArray;
 
 void fft(CArray &x)
 {
