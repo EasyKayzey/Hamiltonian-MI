@@ -98,44 +98,9 @@ int main(int argc, char** argv) {
     string ffn = "HARDCODED";
 #endif
 
-
-    cout << time(nullptr) << endl;
-    vector<OArr> order_results(ORD_R);
-#pragma omp parallel for default(shared)
-    for (int s = 0; s < ORD_R; ++s) {
-        EMatrix mu_upper = mu_t_upper;
-        double g = -2 * M_PI * s / ORD_R;
-        Complex m = polar(1., g);
-        mu_upper *= m;
-        order_results[s] = evolve_initial_nonhermitian(field, to_full_matrix_nonhermitian(mu_upper), psi_i);
-    }
-    cout << time(nullptr) << endl;
-
-    vector<CArray> ffts;
-    for (int i = 0; i < DIM; ++i) {
-        int ii = i + DIM;
-        CArray tfft(ORD_R);
-        for (int j = 0; j < ORD_R; ++j) {
-            tfft[j] = order_results[j][ii];
-        }
-        ifft(tfft);
-        cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
-        // for (auto& d : tfft)
-        //     cout << abs(d) << ' ';
-        for (int k = 0; k < ORD_R; ++k) {
-            if (abs(tfft[k]) > 0.01)
-                cout << k << ": " << abs(tfft[k]) << endl;
-        }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
-        ffts.push_back(tfft);
-    }
-
-    {
-        double sum_of_probs = 0;
-        for (CArray& fft : ffts)
-            sum_of_probs += norm(fft.sum());
-        cout << "\nSum of calculated sum-of-order probablities is " << sum_of_probs << endl;
-    }
+    vector<CArray> ffts = run_order_analysis(field, psi_i, false, [](EMatrix mu_u, Complex m) -> EMatrix {
+        return to_full_matrix_nonhermitian(mu_u * m);
+    });
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
 
@@ -271,7 +236,7 @@ OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& m
     return samples;
 }
 
-vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, function<EMatrix(EMatrix, Complex)>& modulate) {
+vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, function<EMatrix(EMatrix, Complex)> modulate) {
     cout << time(nullptr) << endl;
     vector<OArr> order_results(ORD_R);
 #pragma omp parallel for default(shared)
@@ -304,6 +269,11 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
         cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
         ffts.push_back(tfft);
     }
+    double sum_of_probs = 0;
+    for (CArray& fft : ffts)
+        sum_of_probs += norm(fft.sum());
+    cout << "\nSum of calculated sum-of-order probablities is " << sum_of_probs << endl;
+
     return ffts;
 }
 
