@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 20000, DELTA_T, N_T_double = 1200;
+double T = 15000, DELTA_T, N_T_double = 2000;
 int N_T;
 int ORD_R = 512;
 int ORD_RC = 128;
@@ -12,7 +12,7 @@ EVector H0D;
 EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-// #define USE_FIELD_FILE
+#define USE_FIELD_FILE
 int main(int argc, char** argv) {
     { // this will only work until 2038 so be careful
         time_t now;
@@ -195,8 +195,10 @@ int main(int argc, char** argv) {
 
 
 double envelope_funct(double t) {
-    static_assert(N_TO == 2, "The current envelope function is a double bell curve...\n");
-    return exp(-30 * (2 * t / T - .5) * (2 * t / T - .5)) + exp(-30 * ((2 * t - T) / T - .5) * ((2 * t - T) / T - .5));
+    // static_assert(N_TO == 2, "The current envelope function is a double bell curve...\n");
+    // return exp(-30 * (2 * t / T - .5) * (2 * t / T - .5)) + exp(-30 * ((2 * t - T) / T - .5) * ((2 * t - T) / T - .5));
+    static_assert(N_TO == 1, "The current envelope function is a double bell curve...\n");
+    return exp(-30 * (t / T - .5) * (t / T - .5));
 }
 
 EMatrix to_full_matrix_hermitian(EMatrix upper) {
@@ -298,7 +300,7 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
 
     vector<CArray> ffts;
     for (int i = 0; i < DIM; ++i) {
-        int ii = i + DIM;
+        int ii = i + DIM * (N_TO - 1);
         CArray tfft(ord);
         for (int j = 0; j < ord; ++j) {
             tfft[j] = order_results[j][ii];
