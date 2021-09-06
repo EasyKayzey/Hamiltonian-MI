@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     EMatrix encoding_integers;
     enum enc_scheme { partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = partial;
+    const enc_scheme cur_scheme = full;
     const enc_type cur_type = hermitian;
 #if cur_scheme == partial
     encoding_integers << 
@@ -117,7 +117,15 @@ int main(int argc, char** argv) {
               0, 0, 0, 0, 0, 0,
               0, 0, 0, 0, 0, 0;
 #elif cur_scheme == full
-
+    #if cur_type == nonhermitian
+    encoding_integers = upper_triangle_ones + upper_triangle_ones.transpose();
+    #else
+    encoding_integers = upper_triangle_ones;
+    #endif
+    int ctr = 0;
+    for (Complex& d : upper_triangle_ones.reshaped())
+        if (d.real() != 0)
+            d = (double) ++ctr;
 #else
 #error unsupported encoding scheme
 #endif
