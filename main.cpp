@@ -4,6 +4,7 @@
 double T = 15000, DELTA_T, N_T_double = 2000;
 int N_T;
 int ORD = 512;
+int BASE = 6;
 int main_start_time;
 
 EMatrix mu_t_upper;
@@ -106,7 +107,7 @@ int main(int argc, char** argv) {
     EMatrix encoding_integers;
     enum enc_scheme { partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = full;
+    const enc_scheme cur_scheme = partial;
     const enc_type cur_type = hermitian;
 #if cur_scheme == partial
     encoding_integers << 
@@ -140,16 +141,22 @@ int main(int argc, char** argv) {
 #error unsupported encoding type
 #endif
 
+    long double max_ord = 0;
+    for (Complex& c : encoding_integers.reshaped()) {
+        if (c.real() != 0) {
+            max_ord = max(max_ord, c.real());
+            c = round(pow(BASE, (double) c.real() - 1));
+        }
+    }
+    ORD = 1 << (int) ceil(log2(pow(BASE, (double) max_ord)));
 
 
-
-    vector<CArray> anal_res;
-
+    vector<CArray> anal_res = run_order_analysis(field, psi_i, hermitian ? true : false, encoding_integers);
 
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD, BASE};
     double out_doubles[] = {T, HBAR};
 
     if (message.empty())
@@ -176,7 +183,16 @@ int main(int argc, char** argv) {
         outfile << d << ' ';
     outfile << endl;
 
-    // print stuff
+    cout << encoding_integers.real() << endl;
+
+    for (CArray& arr : anal_res) {
+        for (Complex d : arr)
+            outfile << d.real() << ' ';
+        outfile << endl;
+        for (Complex d : arr)
+            outfile << d.imag() << ' ';
+        outfile << endl;
+    }   
 
     if (!outfile.good())
         cerr << "Writing failed." << endl;
@@ -274,16 +290,17 @@ OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& m
     return samples;
 }
 
-vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers, int ord) {
+vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers) {
     cout << time(nullptr) << endl;
+    int ord = ORD;
     vector<OArr> order_results(ord);
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ord; ++s) {
         EMatrix mu = mu_t_upper + mu_t_upper.adjoint();
         double g = 2 * M_PI * s / ord;
         EMatrix encoding = encoding_integers;
-        for (Complex& d : encoding.reshaped()) // todo fix eigen
-            d = polar(1., d.real() * g);
+        for (Complex& d : encoding.reshaped())
+            d = polar(1.l, d.real() * g);
         EMatrix encoded = (mu.array() * encoding.array());
         if (hermitian)
             order_results[s] = evolve_initial_hermitian(epsilon, mu, psi_i);
