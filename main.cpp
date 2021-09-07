@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         outfile << d << ' ';
     outfile << endl;
 
-    cout << encoding_integers.real() << endl;
+    outfile << encoding_integers.real() << endl;
 
     for (CArray& arr : anal_res) {
         for (Complex d : arr)
