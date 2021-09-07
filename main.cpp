@@ -89,8 +89,8 @@ int main(int argc, char** argv) {
 #else
     cout << "Using hardcoded field..." << endl;
     vector<double> field(N_T);
-    fill(field.begin(), field.end(), 0);
-    string ffn = "ZEROES";
+    fill(field.begin(), field.end(), 1);
+    string ffn = "ONES";
 #endif
 
     EMatrix upper_triangle_ones = EMatrix::Zero();
