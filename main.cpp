@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     enum enc_scheme { other, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = other;
-    const enc_type cur_type = hermitian;
+    const enc_type cur_type = antihermitian;
 
     if (cur_scheme == other) {
         ORD = 256;
@@ -316,6 +316,13 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
             order_results[s] = evolve_initial_nonhermitian(epsilon, encoded, psi_i);
     }
     cout << time(nullptr) << endl;
+
+    for (OArr o : order_results)
+        cout << o[2].real() << ' ';
+    cout << endl;
+    for (OArr o : order_results)
+        cout << o[2].imag() << ' ';
+    cout << endl;
 
     vector<CArray> ffts;
     for (int i = 0; i < DIM; ++i) {
