@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 15000, DELTA_T, N_T_double = 2000;
+double T = 4000, DELTA_T, N_T_double = 250;
 int N_T;
 int ORD = 512;
 int BASE = 6;
@@ -12,7 +12,7 @@ EVector H0D;
 EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-// #define USE_FIELD_FILE
+#define USE_FIELD_FILE
 int main(int argc, char** argv) {
     { // this will only work until 2038 so be careful
         time_t now;
