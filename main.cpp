@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
     }
 
 
-    V   <<  0, 0.2i, 0,
-            0.2i, 0, 0.1i,
-            0, 0.1i, 0;
+    V   <<  0, 0.2, 0,
+            0.2, 0, 0.1,
+            0, 0.1, 0;
 
     EVector psi_i = EVector::Zero();
     psi_i[0] = 1;
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
 
     // outfile << H0D.real().transpose() << endl;
     outfile << -1 << endl;
-    outfile << V.imag() << endl;
+    outfile << V.real() << endl;
 
     // outfile << mu_t_upper.real() + mu_t_upper.real().transpose() << endl;
 
