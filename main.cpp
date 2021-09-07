@@ -3,7 +3,7 @@
 
 double T = 4000, DELTA_T, N_T_double = 250;
 int N_T;
-int ORD = 512;
+int ORD = 0;
 int BASE = 6;
 int main_start_time;
 
@@ -105,51 +105,58 @@ int main(int argc, char** argv) {
                 upper_triangle_ones(i, j) = 1.;
     
     EMatrix encoding_integers;
-    enum enc_scheme { partial, full };
+    enum enc_scheme { other, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = partial;
     const enc_type cur_type = hermitian;
-#if cur_scheme == partial
-    encoding_integers << 
-              0, 1, 2, 3, 0, 0,
-              0, 0, 4, 5, 6, 0,
-              0, 0, 0, 7, 8, 0,
-              0, 0, 0, 0, 9, 0,
-              0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0;
-#elif cur_scheme == full
-    #if cur_type == nonhermitian
-    encoding_integers = upper_triangle_ones + upper_triangle_ones.transpose();
-    #else
-    encoding_integers = upper_triangle_ones;
-    #endif
-    int ctr = 0;
-    for (Complex& d : upper_triangle_ones.reshaped())
-        if (d.real() != 0)
-            d = (double) ++ctr;
-#else
-#error unsupported encoding scheme
-#endif
 
-#if cur_type == hermitian
-    encoding_integers = (-encoding_integers + encoding_integers.transpose()).eval();
-#elif cur_type == antihermitian
-    encoding_integers =  (encoding_integers + encoding_integers.transpose()).eval();
-#elif cur_type == nonhermitian
-// do nothing
-#else
-#error unsupported encoding type
-#endif
+    if (cur_scheme == other) {
 
-    long double max_ord = 0;
-    for (Complex& c : encoding_integers.reshaped()) {
-        if (c.real() != 0) {
-            max_ord = max(max_ord, c.real());
-            c = round(pow(BASE, (double) c.real() - 1));
+    } else if (cur_scheme == partial) {
+        encoding_integers << 
+                0, 1, 2, 3, 0, 0,
+                0, 0, 4, 5, 6, 0,
+                0, 0, 0, 7, 8, 0,
+                0, 0, 0, 0, 9, 0,
+                0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0;
+    } else if (cur_scheme == full) {
+        if (cur_type == nonhermitian) {
+            encoding_integers = upper_triangle_ones + upper_triangle_ones.transpose();
+        } else {
+            encoding_integers = upper_triangle_ones;
         }
+        int ctr = 0;
+        for (Complex& d : upper_triangle_ones.reshaped())
+            if (d.real() != 0)
+                d = (double) ++ctr;
+    } else {
+        throw runtime_error("Unsupported encoding scheme.");
     }
-    ORD = 1 << (int) ceil(log2(pow(BASE, (double) max_ord)));
 
+    if (cur_type == hermitian) {
+        encoding_integers = (-encoding_integers + encoding_integers.transpose()).eval();
+    } else if (cur_type == antihermitian) {
+        encoding_integers =  (encoding_integers + encoding_integers.transpose()).eval();
+    } else if (cur_type == nonhermitian) {
+        // do nothing
+    } else {
+        throw runtime_error("Unsupported encoding type.");
+    }
+
+    if (cur_scheme != other) {
+        long double max_ord = 0;
+        for (Complex& c : encoding_integers.reshaped()) {
+            if (c.real() != 0) {
+                max_ord = max(max_ord, c.real());
+                c = round(pow(BASE, (double) c.real() - 1));
+            }
+        }
+        ORD = 1 << (int) ceil(log2(pow(BASE, (double) max_ord)));
+    } else {
+        if (ORD == 0)
+            throw runtime_error("ORD not set...");
+    }
 
     vector<CArray> anal_res = run_order_analysis(field, psi_i, hermitian ? true : false, encoding_integers);
 
