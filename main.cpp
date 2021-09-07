@@ -12,7 +12,7 @@ EVector H0D;
 EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-#define USE_FIELD_FILE
+// #define USE_FIELD_FILE
 int main(int argc, char** argv) {
     { // this will only work until 2038 so be careful
         time_t now;
@@ -132,9 +132,9 @@ int main(int argc, char** argv) {
 #endif
 
 #if cur_type == hermitian
-    encoding_integers = -encoding_integers + encoding_integers.transpose();
+    encoding_integers = (-encoding_integers + encoding_integers.transpose()).eval();
 #elif cur_type == antihermitian
-    encoding_integers =  encoding_integers + encoding_integers.transpose();
+    encoding_integers =  (encoding_integers + encoding_integers.transpose()).eval();
 #elif cur_type == nonhermitian
 // do nothing
 #else
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
 double envelope_funct(double t) {
     // static_assert(N_TO == 2, "The current envelope function is a double bell curve...\n");
     // return exp(-30 * (2 * t / T - .5) * (2 * t / T - .5)) + exp(-30 * ((2 * t - T) / T - .5) * ((2 * t - T) / T - .5));
-    static_assert(N_TO == 1, "The current envelope function is a double bell curve...\n");
+    static_assert(N_TO == 1, "The current envelope function is a single bell curve...\n");
     return exp(-30 * (t / T - .5) * (t / T - .5));
 }
 
@@ -294,8 +294,11 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
     cout << time(nullptr) << endl;
     int ord = ORD;
     vector<OArr> order_results(ord);
+    cout << "Running analysis with ord=" << ord << endl;
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ord; ++s) {
+        if (s % 1000 == 0)
+            cout << "Doing s=" << s << endl;
         EMatrix mu = mu_t_upper + mu_t_upper.adjoint();
         double g = 2 * M_PI * s / ord;
         EMatrix encoding = encoding_integers;
@@ -303,9 +306,9 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
             d = polar(1.l, d.real() * g);
         EMatrix encoded = (mu.array() * encoding.array());
         if (hermitian)
-            order_results[s] = evolve_initial_hermitian(epsilon, mu, psi_i);
+            order_results[s] = evolve_initial_hermitian(epsilon, encoded, psi_i);
         else
-            order_results[s] = evolve_initial_nonhermitian(epsilon, mu, psi_i);
+            order_results[s] = evolve_initial_nonhermitian(epsilon, encoded, psi_i);
     }
     cout << time(nullptr) << endl;
 

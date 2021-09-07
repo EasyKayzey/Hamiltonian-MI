@@ -42,7 +42,7 @@ const int N_TO = 1;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
 
-#define USE_LONG_DOUBLE true
+#define USE_LONG_DOUBLE false
 #ifdef USE_LONG_DOUBLE
 typedef complex<long double> Complex;
 typedef array<long double, DIM> DArr;
