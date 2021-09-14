@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
             encoding_integers = upper_triangle_ones;
         }
         int ctr = 0;
-        for (Complex& d : upper_triangle_ones.reshaped())
+        for (Complex& d : encoding_integers.reshaped())
             if (d.real() != 0)
                 d = (double) ++ctr;
     } else {
