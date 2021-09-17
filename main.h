@@ -18,6 +18,7 @@
 #include "Eigen/Core"
 #include "Eigen/Eigenvalues"
 #include "Eigen/LU"
+#include "unsupported/Eigen/KroneckerProduct"
 #include "unsupported/Eigen/MatrixFunctions"
 #include "omp.h"
 
@@ -35,7 +36,7 @@
 using namespace std;
 using namespace Eigen;
 
-const int DIM = 3;
+const int DIM = 4;
 const int L = (DIM * (DIM - 1)) / 2;
 const double HBAR = 1;
 const int N_TO = 1;

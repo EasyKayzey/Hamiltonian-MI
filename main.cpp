@@ -36,7 +36,22 @@ int main(int argc, char** argv) {
         }
     }
 
-    H0D << 0, 0.00820226918, 0.01558608386;
+    Matrix2cd I2 = Matrix2cd::Identity();
+    Matrix2cd x2, y2, z2;
+    x2 << 0,   1,
+          1,   0;
+    y2 << 0, -1i,
+          1i,  0;
+    z2 << 1,   0,
+          0,  -1;
+    x2 /= 2, y2 /= 2, z2 /= 2;
+
+    double omega_1, omega_2, J12;
+    omega_1 = 2 * M_PI * 1500;
+    omega_2 = -2 * M_PI * 2100;
+    J12 = 2 * M_PI * 100; 
+
+    H0D = (omega_1 * kroneckerProduct(z2, I2) + omega_2 * kroneckerProduct(I2, z2) + J12 * kroneckerProduct(z2, z2)).diagonal();
     C = exp(H0D.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
 
     mu_t_upper   <<  0, 0.06116130402, -0.01272999623,
