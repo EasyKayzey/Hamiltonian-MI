@@ -118,6 +118,14 @@ int main(int argc, char** argv) {
             for (EMatrix& upper : dipoles_upper)
                 if (upper(i, j) != upper(j, i))
                     upper_triangle_ones(i, j) = 1.;
+
+    DipoleSet fulld;
+    for (int i = 0; i < N_FIELDS; ++i)
+        fulld[i] = dipoles_upper[i] + dipoles_upper[i].transpose();
+    auto rr = evolve_initial_nonhermitian(fields, fulld, psi_i);
+    for (auto i : rr)
+        cout << i << endl;
+    return 0;
     
     EMatrix encoding_integers;
     enum enc_scheme { other, partial, full };
@@ -298,6 +306,12 @@ OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipole
         for (int j = 0; j < N_FIELDS; ++j)
             Hs[i] += fields[j][i] * dipoles[j];
     }
+
+    cout << fields[0][77] << "    " << fields[1][77] << endl;;
+    cout << Hs[77] << endl;
+    cout << (-1.i * Hs[77] * DELTA_T).exp() << endl;
+    cout << (-1.i * Hs[77] * DELTA_T).exp() * (-1.i * Hs[77] * DELTA_T).exp().adjoint() << endl;
+    exit(0);
 
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
     it[0] = psi_i;
