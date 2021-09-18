@@ -120,13 +120,15 @@ int main(int argc, char** argv) {
                     upper_triangle_ones(i, j) = 1.;
 
     EMatrix encoding_integers;
-    enum enc_scheme { other, partial, full };
+    enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = full;
-    const enc_type cur_type = hermitian;
+    const enc_scheme cur_scheme = order;
+    const enc_type cur_type = antihermitian;
 
     if (cur_scheme == other) {
 
+    } else if (cur_scheme == order) {
+        encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
                 0, 1, 2, 3, 0, 0,
