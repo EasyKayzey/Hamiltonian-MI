@@ -202,10 +202,11 @@ int main(int argc, char** argv) {
 
     outfile << "Fields:" << endl;
 
-    for (vector<double>& field : fields)
+    for (vector<double>& field : fields) {
         for (double d : field)
             outfile << d << ' ';
-    outfile << endl;
+        outfile << endl;
+    }
 
     outfile << encoding_integers.real() << endl;
 
