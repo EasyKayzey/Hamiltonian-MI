@@ -1,10 +1,10 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 0.0005, DELTA_T, N_T_double = 250;
+double T = 0.0012, DELTA_T, N_T_double = 600;
 int N_T;
 int ORD = 0;
-int BASE = 16;
+int BASE = 1600;
 int main_start_time;
 
 DipoleSet dipoles_upper;
@@ -14,7 +14,7 @@ array<ECovector, DIM> anal_pop;
 
 #define USE_FIELD_FILE
 int main(int argc, char** argv) {
-    { // this will only work until 2038 so be careful
+    { // this will only work until 2038 so be carefulk
         time_t now;
         main_start_time = time(&now);
         assert(now == main_start_time);
