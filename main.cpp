@@ -1,10 +1,10 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 20000, DELTA_T, N_T_double = 1200;
+double T = 0.0012, DELTA_T, N_T_double = 600;
 int N_T;
 int ORD = 0;
-int BASE = 20;
+int BASE = 10;
 int main_start_time;
 
 DipoleSet dipoles_upper;
@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
 
 #ifdef USE_FIELD_FILE
     FieldSet fields{};
+    fill(fields.begin(), fields.end(), vector<double>(N_T));
     // string ffn = string(argv[1]);
     string ffn;
     cout << "Field file name?" << endl;
@@ -85,12 +86,16 @@ int main(int argc, char** argv) {
         if (field_file.good()) {
             cout << "Using " << N_FIELDS << " fields from " << ffn << ".txt" << endl;
             try {
-                for (int i = 0; i < N_T; ++i)
-                    for (vector<double>& field : fields)
-                        field_file >> field[i];
+                double d;
+                for (int i = 0; i < N_T; ++i) {
+                    for (vector<double>& field : fields) {
+                        field_file >> d;
+                        field[i] = d;
+                    }
+                }
                 if (!field_file.eof())
                     throw runtime_error("Field file too long...");
-            } catch (runtime_error e) {
+            } catch (runtime_error& e) {
                 cout << "Reading fields failed... Error: " << e.what() << endl;
                 exit(0);
             }
@@ -118,7 +123,7 @@ int main(int argc, char** argv) {
     enum enc_scheme { other, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = full;
-    const enc_type cur_type = antihermitian;
+    const enc_type cur_type = hermitian;
 
     if (cur_scheme == other) {
 
