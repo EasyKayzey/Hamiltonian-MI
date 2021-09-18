@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
             for (EMatrix& upper : dipoles_upper)
                 if (upper(i, j) != upper(j, i))
                     upper_triangle_ones(i, j) = 1.;
-    
+
     EMatrix encoding_integers;
     enum enc_scheme { other, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
                 0, 0, 0, 0, 0, 0;
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
-            encoding_integers = upper_triangle_ones + upper_triangle_ones.transpose();
+            encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
         } else {
             encoding_integers = upper_triangle_ones;
         }
@@ -150,9 +150,9 @@ int main(int argc, char** argv) {
     }
 
     if (cur_type == hermitian) {
-        encoding_integers = (-encoding_integers + encoding_integers.transpose()).eval();
+        encoding_integers = (-encoding_integers + encoding_integers.adjoint()).eval();
     } else if (cur_type == antihermitian) {
-        encoding_integers =  (encoding_integers + encoding_integers.transpose()).eval();
+        encoding_integers =  (encoding_integers + encoding_integers.adjoint()).eval();
     } else if (cur_type == nonhermitian) {
         // do nothing
     } else {
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
     outfile << H0D.real().transpose() << endl;
 
     for (EMatrix& m : dipoles_upper)
-        outfile << m + m.transpose() << endl;
+        outfile << m + m.adjoint() << endl;
 
     outfile << psi_i.real().transpose() << endl;
 
@@ -326,7 +326,7 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
             d = polar(1.l, d.real() * g);
         DipoleSet encoded;
         for (int i = 0; i < N_FIELDS; ++i)
-            encoded[i] = ((dipoles_upper[i] + dipoles_upper[i].transpose()).array() * encoding.array()).matrix();
+            encoded[i] = ((dipoles_upper[i] + dipoles_upper[i].adjoint()).array() * encoding.array()).matrix();
         // if (hermitian)
         //     order_results[s] = evolve_initial_hermitian(fields, encoded, psi_i);
         // else
