@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 0.0012, DELTA_T, N_T_double = 600;
+double T = 0.0024, DELTA_T, N_T_double = 1200;
 int N_T;
 int ORD = 0;
 int BASE = 16;
