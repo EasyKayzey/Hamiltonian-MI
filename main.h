@@ -75,7 +75,7 @@ EMatrix to_full_matrix_antihermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
+// OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 
 vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);

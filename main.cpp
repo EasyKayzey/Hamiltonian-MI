@@ -150,9 +150,9 @@ int main(int argc, char** argv) {
     }
 
     if (cur_type == hermitian) {
-        encoding_integers = (-encoding_integers + encoding_integers.adjoint()).eval();
+        encoding_integers = (encoding_integers - encoding_integers.adjoint()).eval();
     } else if (cur_type == antihermitian) {
-        encoding_integers =  (encoding_integers + encoding_integers.adjoint()).eval();
+        encoding_integers = (encoding_integers + encoding_integers.adjoint()).eval();
     } else if (cur_type == nonhermitian) {
         // do nothing
     } else {
@@ -266,30 +266,30 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     return {{CP, PdC}, lambda};
 }
 
-OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
-    throw runtime_error("Not implemented right now");
-    // auto diag_ret = diag_vec(mu, C);
-    // EVector lambda = diag_ret.second;
-    // EMatrix CP = diag_ret.first.first;
-    // EMatrix PdC = diag_ret.first.second;
-    // EMatrix PdCCP = PdC * CP;
+// OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
+//     throw runtime_error("Not implemented right now");
+//     // auto diag_ret = diag_vec(mu, C);
+//     // EVector lambda = diag_ret.second;
+//     // EMatrix CP = diag_ret.first.first;
+//     // EMatrix PdC = diag_ret.first.second;
+//     // EMatrix PdCCP = PdC * CP;
 
-    // vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
-    // for (int i = 0; i < N_T; ++i)
-    //     E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
+//     // vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
+//     // for (int i = 0; i < N_T; ++i)
+//     //     E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
 
-    // vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
-    // it[0] = PdC * psi_i;
-    // for (int i = 1; i < N_T; ++i)
-    //     it[i] = PdCCP * (E[i - 1] * it[i - 1]);
-    // it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
+//     // vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
+//     // it[0] = PdC * psi_i;
+//     // for (int i = 1; i < N_T; ++i)
+//     //     it[i] = PdCCP * (E[i - 1] * it[i - 1]);
+//     // it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
 
-    // OArr samples{};
-    // for (int i = 0; i < N_TO; ++i)
-    //     for (int j = 0; j < DIM; ++j)
-    //         samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
-    // return samples;
-}
+//     // OArr samples{};
+//     // for (int i = 0; i < N_TO; ++i)
+//     //     for (int j = 0; j < DIM; ++j)
+//     //         samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
+//     // return samples;
+// }
 
 OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
 
@@ -333,6 +333,8 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
         // else
         order_results[s] = evolve_initial_nonhermitian(fields, encoded, psi_i);
     }
+    if (hermitian && !hermitian)
+        cout << "This print exists to remove an unused variable warning." << endl;
     cout << time(nullptr) << endl;
 
     vector<CArray> ffts;
