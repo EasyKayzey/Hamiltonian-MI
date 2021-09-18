@@ -4,9 +4,9 @@
 double T = 0.0012, DELTA_T, N_T_double = 600;
 int N_T;
 int ORD = 0;
-int BASE = 16;
+int BASE = 1;
 int main_start_time;
-const double field_scale_factor = 1.0;
+const double field_scale_factor = 1;
 
 DipoleSet dipoles_upper;
 EVector H0D;
@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
             try {
                 double d;
                 for (int i = 0; i < N_T; ++i) {
-                    for (vector<double>& field : fields) {
+                    for (int j = 0; j < N_FIELDS; ++j) {
                         field_file >> d;
-                        field[i] = d * field_scale_factor;
+                        fields[j][i] = d * field_scale_factor;
                     }
                 }
                 if (!field_file.eof())
