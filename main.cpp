@@ -4,7 +4,7 @@
 double T = 0.0012, DELTA_T, N_T_double = 600;
 int N_T;
 int ORD = 0;
-int BASE = 10;
+int BASE = 16;
 int main_start_time;
 
 DipoleSet dipoles_upper;
