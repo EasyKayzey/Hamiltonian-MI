@@ -1,10 +1,10 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 0.0012, DELTA_T, N_T_double = 600;
+double T = 0.0005, DELTA_T, N_T_double = 250;
 int N_T;
 int ORD = 0;
-int BASE = 1;
+int BASE = 6;
 int main_start_time;
 const double field_scale_factor = 1;
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     N_T = (int) round(N_T_double);
     DELTA_T = T / N_T;
 
-    string message = "AT1";
+    string message = "";
     if (argc > 1) {
         for (int i = 1; i < argc; ++i) {
             message += '_';
@@ -94,8 +94,12 @@ int main(int argc, char** argv) {
                         fields[j][i] = d * field_scale_factor;
                     }
                 }
-                if (!field_file.eof())
-                    throw runtime_error("Field file too long...");
+                if (!field_file.eof()) {
+                    char c;
+                    while (field_file.get(c))
+                        if (!std::isspace(c))
+                            throw runtime_error("Field file too long...");
+                }
             } catch (runtime_error& e) {
                 cout << "Reading fields failed... Error: " << e.what() << endl;
                 exit(0);
@@ -179,7 +183,7 @@ int main(int argc, char** argv) {
     vector<CArray> anal_res = run_order_analysis(fields, psi_i, hermitian ? true : false, encoding_integers);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
+    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) + (message == "#" ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE};
     double out_doubles[] = {T, HBAR, field_scale_factor};
