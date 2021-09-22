@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     vector<CArray> anal_res = run_order_analysis(fields, psi_i, hermitian ? true : false, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
-    for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.transpose()).eval(); 
+    for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
     auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
@@ -405,26 +405,6 @@ pair<int, int> calc_loc(int u_i) { // I could binary search this but I'm too laz
             return {i, u_i - ((i * (i - 1)) / 2)};
     throw runtime_error("calc_loc failed");
 }
-
-/*
-vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, const EMatrix& PdC,
-                            const EVector& lambda, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
-    vector<EMatrix, aligned_allocator<EMatrix>> E(N_T);
-    for (int i = 0; i < N_T; ++i)
-        E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * eps_inter[i]).matrix().asDiagonal();
-
-    vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
-    it[0] = psi_i;
-    for (int i = 1; i <= N_T; ++i)
-        it[i] = CP * (E[i - 1] * (PdC * it[i - 1]));
-
-    vector<DArr> pops(N_T + 1);
-    for (int i = 0; i <= N_T; ++i)
-        for (int o = 0; o < DIM; ++o)
-            pops[i][o] = (anal_pop[o] * it[i]).squaredNorm();
-    return pops;
-}
-*/
 
 pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
 
