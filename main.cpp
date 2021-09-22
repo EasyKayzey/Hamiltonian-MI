@@ -4,7 +4,7 @@
 double T = 0.0005, DELTA_T, N_T_double = 250;
 int N_T;
 int ORD = 0;
-int BASE = 6;
+int BASE = 10;
 int main_start_time;
 const double field_scale_factor = 1;
 
@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
         cur(i) = 1;
         anal_pop[i] = cur;
     }
+
+    start_label:
 
 #ifdef USE_FIELD_FILE
     FieldSet fields{};
@@ -246,6 +248,8 @@ int main(int argc, char** argv) {
 
     outfile.close();
 
+    // goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
+    // But right now, I just want to have main_start_time stay the same without all the work involved, so too bad.
 }
 
 
