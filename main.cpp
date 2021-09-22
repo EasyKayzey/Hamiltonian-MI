@@ -217,9 +217,9 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < DIM; ++i) {
         for (DArr &a : PGR.first) {
-            cout << a[i] << ' ';
+            outfile << a[i] << ' ';
         }
-        cout << endl;
+        outfile << endl;
     }
 
     outfile << "Fields:" << endl;
