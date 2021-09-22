@@ -182,15 +182,19 @@ int main(int argc, char** argv) {
 
     vector<CArray> anal_res = run_order_analysis(fields, psi_i, hermitian ? true : false, encoding_integers);
 
+    DipoleSet dipoles = dipoles_upper;
+    for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.transpose()).eval(); 
+    auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
+
 
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) + (message == "#" ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
     double out_doubles[] = {T, HBAR, field_scale_factor};
 
     if (message.empty())
         message = "#";
-    outfile << "HMR1 " << 0 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "HMR1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
@@ -206,6 +210,17 @@ int main(int argc, char** argv) {
         outfile << m + m.adjoint() << endl;
 
     outfile << psi_i.real().transpose() << endl;
+    outfile << psi_i.imag().transpose() << endl;
+
+    outfile << PGR.second.real().transpose() << endl;
+    outfile << PGR.second.imag().transpose() << endl;
+
+    for (int i = 0; i < DIM; ++i) {
+        for (DArr &a : PGR.first) {
+            cout << a[i] << ' ';
+        }
+        cout << endl;
+    }
 
     outfile << "Fields:" << endl;
 
@@ -407,6 +422,29 @@ vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, 
 }
 */
 
+pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
+
+    vector<EMatrix, aligned_allocator<EMatrix>> Hs(N_T);
+    for (int i = 0; i < N_T; ++i) {
+        Hs[i] = H0D.asDiagonal();
+        for (int j = 0; j < N_FIELDS; ++j)
+            Hs[i] += fields[j][i] * dipoles[j];
+    }
+
+    vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
+    it[0] = psi_i;
+    for (int i = 1; i <= N_T; ++i)
+        it[i] = (-1.i * Hs[i-1] * DELTA_T).exp() * it[i - 1];
+
+    vector<DArr> samples;
+    for (EVector& iv : it) {
+        DArr a;
+        for (int i = 0; i < DIM; ++i)
+            a[i] = norm(iv(i));
+        samples.push_back(a);
+    }
+    return {samples, it[N_T]};
+}
 
 template <class T, class F> void print_vec(vector<vector<T>> vec, ofstream& outfile, F lambda) {
     for (vector<T> i : vec) {

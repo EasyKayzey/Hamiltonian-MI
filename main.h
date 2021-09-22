@@ -84,8 +84,7 @@ Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 
 pair<int, int> calc_loc(int u_i);
 
-// vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, const EMatrix& PdC,
-//                            const EVector& lambda, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
+pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 
 void ptime();
 
