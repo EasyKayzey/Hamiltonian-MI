@@ -70,8 +70,8 @@ EMatrix to_full_matrix_antihermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+// OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const EVector& H0D_);
 
 vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);
 
