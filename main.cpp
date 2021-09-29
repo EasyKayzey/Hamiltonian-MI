@@ -360,7 +360,7 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
         order_results[s] = evolve_initial_nonhermitian(fields, encoded, psi_i);
     }
     if (hermitian && !hermitian)
-        cout << "This print exists to remove an unused variable warning." << endl;
+        cout << "This print exists to remove an unused variable warning.\n";
     cout << time(nullptr) << endl;
 
     vector<CArray> ffts;
@@ -372,19 +372,22 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
         }
         fft(tfft);
         tfft /= tfft.size();
-        cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
+        cout << "\nFFT for 1 to " << i + 1 << ":\n";
         // for (auto& d : tfft)
         //     cout << abs(d) << ' ';
         for (int k = 0; k < ord; ++k) {
             if (abs(tfft[k]) > 0.01)
-                cout << k << ": " << abs(tfft[k]) << endl;
+                cout << k << ": " << abs(tfft[k]) << '\n';
         }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
+        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << '\n';
         ffts.push_back(tfft);
     }
     double sum_of_probs = 0;
     for (CArray& fft : ffts)
         sum_of_probs += norm(fft.sum());
+    cout << "\nFinal state when unmodulated: ";
+    for (const Complex& c : order_results[0])
+        cout << c << ' ';
     cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs << endl;
 
     return ffts;
