@@ -3,8 +3,8 @@
 
 double T = 20000, DELTA_T, N_T_double = 1200;
 int N_T;
-int ORD = 4096;
-int BASE = 5;
+int ORD = 1024;
+int BASE = 8;
 int main_start_time;
 
 EMatrix mu_t_upper;
@@ -12,7 +12,7 @@ EVector H0D;
 EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-const EVector encoding_H0D(1., 125., 3125.);
+const EVector encoding_H0D(1., 0., 0.);
 
 //#define USE_FIELD_FILE
 int main(int argc, char** argv) {
@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
     const enc_type cur_type = antihermitian;
 
     if (cur_scheme == other) {
-        encoding_integers <<  0, 5, 25,
-                              0, 0, 625,
+        encoding_integers <<  0, 0, 0,
+                              0, 0, 0,
                               0, 0, 0;
                              /* 1, 5, 25,
                              5, 125, 625,
@@ -283,7 +283,7 @@ OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& m
     // EMatrix CP = diag_ret.first.first;
     // EMatrix PdC = diag_ret.first.second;
     // EMatrix PdCCP = PdC * CP;
-    auto C_ = exp(H0D.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
+    auto C_ = exp(H0D_.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
     EDMatrix CC = C_.toDenseMatrix().diagonal().array().pow(2).matrix().asDiagonal();
 
     vector<EMatrix, aligned_allocator<EMatrix>> Ex(N_T);
@@ -321,7 +321,10 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
         // if (hermitian)
         //     order_results[s] = evolve_initial_hermitian(epsilon, encoded, psi_i);
         // else
-        EVector H0D_ = H0D.array() * exp(1i * encoding_H0D.array());
+        EVector encoding_H0D_ = encoding_H0D;
+        for (Complex& d : encoding_H0D_)
+            d = polar(1.l, d.real() * g);
+        EVector H0D_ = H0D.array() * encoding_H0D_.array();
         order_results[s] = evolve_initial_nonhermitian(epsilon, encoded, psi_i, H0D_);
     }
     cout << time(nullptr) << endl;
