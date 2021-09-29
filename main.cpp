@@ -6,7 +6,7 @@ int N_T;
 int ORD = 0;
 int BASE = 10;
 int main_start_time;
-const double field_scale_factor = 1;
+double field_scale_factor = 1;
 
 DipoleSet dipoles_upper;
 EVector H0D;
@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
     cin >> ffn;
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
+    cout << "Amplitude multiplier?" << endl;
+    cin >> field_scale_factor;
 
     {
         ifstream field_file(path + ffn + ".txt");
