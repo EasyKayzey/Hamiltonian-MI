@@ -84,7 +84,15 @@ int main(int argc, char** argv) {
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
     cout << "Amplitude multiplier?" << endl;
-    cin >> field_scale_factor;
+    string amul;
+    cin >> amul;
+    if (amul.empty() || amul == "1")
+        field_scale_factor = 1;
+    else {
+        message += (message.length() == 0 ? "" : "_") + amul;
+        field_scale_factor = stod(amul);
+    }
+
 
     {
         ifstream field_file(path + ffn + ".txt");
@@ -191,7 +199,8 @@ int main(int argc, char** argv) {
     auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) + (message == "#" ? "" : "_" + message) + ".txt");
+    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) 
+                     + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
     double out_doubles[] = {T, HBAR, field_scale_factor};
