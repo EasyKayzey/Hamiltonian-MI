@@ -4,7 +4,7 @@
 double T = 0.0005, DELTA_T, N_T_double = 250;
 int N_T;
 int ORD = 0;
-int BASE = 10;
+int BASE = 1024;
 int main_start_time;
 const double field_scale_factor = 1;
 
@@ -129,8 +129,8 @@ int main(int argc, char** argv) {
     EMatrix encoding_integers;
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = full;
-    const enc_type cur_type = hermitian;
+    const enc_scheme cur_scheme = order;
+    const enc_type cur_type = nonhermitian;
 
     if (cur_scheme == other) {
 
