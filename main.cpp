@@ -14,6 +14,7 @@ EVector H0D;
 array<ECovector, DIM> anal_pop;
 
 #define USE_FIELD_FILE
+#define USE_GOTO
 int main(int argc, char** argv) {
     { // this will only work until 2038 so be carefulk
         time_t now;
@@ -114,11 +115,19 @@ int main(int argc, char** argv) {
                 }
             } catch (runtime_error& e) {
                 cout << "Reading fields failed... Error: " << e.what() << endl;
+#ifdef USE_GOTO
+                goto start_label;
+#else
                 exit(0);
+#endif
             }
         } else {
             cout << "Reading fields failed..." << endl;
+#ifdef USE_GOTO
+            goto start_label;
+#else
             exit(0);
+#endif
         }
     }
 #else
@@ -160,7 +169,8 @@ int main(int argc, char** argv) {
         } else {
             encoding_integers = upper_triangle_ones;
         }
-        int ctr = 0;
+        int ctr = 0;    // goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
+
         for (Complex& d : encoding_integers.reshaped())
             if (d.real() != 0)
                 d = (double) ++ctr;
@@ -259,8 +269,10 @@ int main(int argc, char** argv) {
 
     outfile.close();
 
-    // goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
+#ifdef USE_GOTO
+    goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
     // But right now, I just want to have main_start_time stay the same without all the work involved, so too bad.
+#endif
 }
 
 
