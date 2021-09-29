@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
             message += argv[i];
         }
     }
+    string message_backup = message;
 
     EMatrix2 I2 = EMatrix2::Identity();
     EMatrix2 x2, y2, z2;
@@ -270,6 +271,7 @@ int main(int argc, char** argv) {
     outfile.close();
 
 #ifdef USE_GOTO
+    message = message_backup;
     goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
     // But right now, I just want to have main_start_time stay the same without all the work involved, so too bad.
 #endif
