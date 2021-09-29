@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
     auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) 
+    ofstream outfile(string(path) + "HMO_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) 
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 
     if (message.empty())
         message = "#";
-    outfile << "HMR1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "HMRO1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
