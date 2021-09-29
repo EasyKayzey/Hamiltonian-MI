@@ -116,15 +116,12 @@ int main(int argc, char** argv) {
                 }
             } catch (runtime_error& e) {
                 cout << "Reading fields failed... Error: " << e.what() << endl;
-#ifdef USE_GOTO
-                goto start_label;
-#else
                 exit(0);
-#endif
             }
         } else {
             cout << "Reading fields failed..." << endl;
 #ifdef USE_GOTO
+            message = message_backup;
             goto start_label;
 #else
             exit(0);
