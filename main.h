@@ -13,6 +13,8 @@
 #include <unordered_set>
 #include <iomanip>
 #include <atomic>
+#include <valarray>
+#include <map>
 #include "Eigen/Core"
 #include "Eigen/Eigenvalues"
 #include "Eigen/LU"
@@ -33,35 +35,45 @@
 using namespace std;
 using namespace Eigen;
 
-const int DIM = 6;
+const int DIM = 3;
 const int L = (DIM * (DIM - 1)) / 2;
 const double HBAR = 1;
-const int N_TO = 2;
+const int N_TO = 1;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
 
+#define USE_LONG_DOUBLE false
+#ifdef USE_LONG_DOUBLE
+typedef complex<long double> Complex;
+typedef array<long double, DIM> DArr;
+#else
 typedef complex<double> Complex;
+typedef array<double, DIM> DArr;
+#endif
+typedef array<Complex, N_OBS> OArr;
 typedef Matrix<Complex, DIM, DIM> EMatrix;
 typedef DiagonalMatrix<Complex, DIM> EDMatrix;
 typedef Matrix<Complex, DIM, 1> EVector;
 typedef Matrix<Complex, 1, DIM> ECovector;
 typedef Matrix<Complex, Dynamic, 1> TVector;
 typedef Matrix<double, Dynamic, 1> RTVector;
-typedef array<Complex, N_OBS> OArr;
-typedef array<double, DIM> DArr;
 typedef array<pair<double, double>, L> FGenome;
+typedef valarray<Complex> CArray;
 typedef mt19937 rng;
 
 int main(int argc, char** argv);
 
 double envelope_funct(double t);
 
-EMatrix to_full_matrix(EMatrix upper);
+EMatrix to_full_matrix_hermitian(EMatrix upper);
+EMatrix to_full_matrix_antihermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
+OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+
+vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);
 
 Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 
@@ -101,9 +113,6 @@ struct hash<array<T, N>>
 };
 
 // FFT stuff
-
-#include <valarray>
-typedef valarray<Complex> CArray;
 
 void fft(CArray &x)
 {
