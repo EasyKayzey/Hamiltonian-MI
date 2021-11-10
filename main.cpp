@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
             throw runtime_error("ORD not set...");
     }
 
-    vector<CArray> anal_res = run_order_analysis(fields, psi_i, hermitian ? true : false, encoding_integers);
+    vector<CArray> anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
     for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
