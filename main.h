@@ -44,6 +44,8 @@ const int N_OBS = DIM * N_TO;
 const int N_H = L;
 const int N_FIELDS = 2;
 
+const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
+
 #define USE_LONG_DOUBLE false
 #ifdef USE_LONG_DOUBLE
 typedef complex<long double> Complex;

@@ -16,7 +16,7 @@ array<ECovector, DIM> anal_pop;
 #define USE_FIELD_FILE
 #define USE_GOTO
 int main(int argc, char** argv) {
-    { // this will only work until 2038 so be carefulk
+    { // this will only work until 2038 so be careful
         time_t now;
         main_start_time = time(&now);
         assert(now == main_start_time);
@@ -50,9 +50,9 @@ int main(int argc, char** argv) {
     x2 /= 2, y2 /= 2, z2 /= 2;
 
     Complex omega_1, omega_2, J12;
-    omega_1 = 2 * M_PI * 1500;
-    omega_2 = -2 * M_PI * 2100;
-    J12 = 2 * M_PI * 100; 
+    omega_1 = 2 * MY_PI * 1500;
+    omega_2 = -2 * MY_PI * 2100;
+    J12 = 2 * MY_PI * 100; 
 
     H0D = (omega_1 * kroneckerProduct(z2, I2).eval() + omega_2 * kroneckerProduct(I2, z2).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
     // C = exp(H0D.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
@@ -369,7 +369,7 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
     for (int s = 0; s < ord; ++s) {
         if (s % 1000 == 0)
             cout << "Doing s=" << s << endl;
-        double g = 2 * M_PI * s / ord;
+        double g = 2 * MY_PI * s / ord;
         EMatrix encoding = encoding_integers;
         for (Complex& d : encoding.reshaped())
             d = polar(1.l, d.real() * g);
