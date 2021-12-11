@@ -143,10 +143,10 @@ int main(int argc, char** argv) {
                 if (upper(i, j) != upper(j, i))
                     upper_triangle_ones(i, j) = 1.;
 
-    EMatrix encoding_integers;
+ EMatrix encoding_integers;
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = full;
+    const enc_scheme cur_scheme = partial;
     const enc_type cur_type = hermitian;
 
     if (cur_scheme == other) {
@@ -155,19 +155,17 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 1, 2, 3, 0, 0,
-                0, 0, 4, 5, 6, 0,
-                0, 0, 0, 7, 8, 0,
-                0, 0, 0, 0, 9, 0,
-                0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0;
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 1,
+                0, 0, 0, 0;
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
             encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
         } else {
             encoding_integers = upper_triangle_ones;
         }
-        int ctr = 0;    // goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
+        int ctr = 0;
 
         for (Complex& d : encoding_integers.reshaped())
             if (d.real() != 0)
