@@ -36,7 +36,7 @@
 using namespace std;
 using namespace Eigen;
 
-const int DIM = 4;
+const int DIM = 8;
 const int L = (DIM * (DIM - 1)) / 2;
 const double HBAR = 1;
 const int N_TO = 1;
@@ -95,6 +95,10 @@ template <class T, class F, size_t N> void print_arr(vector<array<T, N>> vec, of
 
 inline double normalize(double rand, double min, double max) {
     return rand * (max - min) + min;
+}
+
+inline EMatrix kroneckerProduct3(const EMatrix2& A, const EMatrix2& B, const EMatrix2& C) {
+	return kroneckerProduct(A, kroneckerProduct(B, C).eval()).eval();
 }
 
 // Here's a hash function for arrays:
