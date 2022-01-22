@@ -1,10 +1,10 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 0.0012, DELTA_T, N_T_double = 600;
+double T = 0.003, DELTA_T, N_T_double = 600;
 int N_T;
 int ORD = 0;
-int BASE = 10;
+int BASE = 7;
 int main_start_time;
 double field_scale_factor = 1;
 
@@ -163,13 +163,13 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 2, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 1, 0, 0, 2, 0,
+                0, 0, 0, 0, 0, 0, 0, 3,
+                0, 0, 0, 0, 0, 4, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 1,
+                0, 0, 0, 0, 0, 0, 0, 5,
                 0, 0, 0, 0, 0, 0, 0, 0;
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
