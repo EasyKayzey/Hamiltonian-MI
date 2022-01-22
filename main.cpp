@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = partial;
-    const enc_type cur_type = hermitian;
+    const enc_type cur_type = nonhermitian;
 
     if (cur_scheme == other) {
 
@@ -155,10 +155,10 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 1,
-                0, 0, 0, 0;
+                0, 2, 0, 0,
+                0, 0, 0, 3,
+                4, 0, 0, 1,
+                0, 0, 5, 0;
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
             encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
