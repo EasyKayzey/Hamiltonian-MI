@@ -73,15 +73,6 @@ int main(int argc, char** argv) {
     dipoles_upper[1] = (kroneckerProduct3(y2, I2, I2) + kroneckerProduct3(I2, y2, I2) + kroneckerProduct3(I2, I2, y2)).triangularView<Eigen::Upper>();
 
 
-    EVector psi_i = EVector::Zero();
-    psi_i[0] = 1;
-
-    for (int i = 0; i < DIM; ++i) {
-        ECovector cur = ECovector::Zero();
-        cur(i) = 1;
-        anal_pop[i] = cur;
-    }
-
     start_label:
 
 #ifdef USE_FIELD_FILE
@@ -93,6 +84,7 @@ int main(int argc, char** argv) {
     cin >> ffn;
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
+    
     cout << "Amplitude multiplier?" << endl;
     string amul;
     cin >> amul;
@@ -101,6 +93,34 @@ int main(int argc, char** argv) {
     else {
         message += (message.length() == 0 ? "" : "_") + amul;
         field_scale_factor = stod(amul);
+    }
+
+    string init_state_str;
+    int init_state;
+    cout << "Initial state index?" << endl;
+    cin >> init_state_str;
+    if (!init_state_str.empty() && init_state_str != "0") {
+        init_state = stoi(init_state_str);
+        message += (message.length() == 0 ? "" : "_") + init_state_str;
+    } else {
+        init_state = 0;
+    }
+        
+
+    string message_append;
+    cout << "Message append? (can use # for no)" << endl;
+    cin >> message_append;
+    if (message_append.length() != 0 && message_append != "#")
+        message += (message.length() == 0 ? "" : "_") + message_append;
+
+
+    EVector psi_i = EVector::Zero();
+    psi_i[init_state] = 1;
+
+    for (int i = 0; i < DIM; ++i) {
+        ECovector cur = ECovector::Zero();
+        cur(i) = 1;
+        anal_pop[i] = cur;
     }
 
 
@@ -165,12 +185,13 @@ int main(int argc, char** argv) {
         encoding_integers << 
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 1, 0, 0, 2, 0,
-                0, 0, 0, 0, 0, 0, 0, 3,
-                0, 0, 0, 0, 0, 4, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 5,
-                0, 0, 0, 0, 0, 0, 0, 0;
+                0, 0, 1, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 4, 0, 0, 0,
+                0, 0, 2, 0, 0, 0, 0, 0,
+                0, 0, 0, 3, 0, 0, 5, 0;
+
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
             encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
@@ -217,7 +238,7 @@ int main(int argc, char** argv) {
     auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\")+1) 
+    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
