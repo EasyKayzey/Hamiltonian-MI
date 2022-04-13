@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 0.003, DELTA_T, N_T_double = 600;
+double T = 20000, DELTA_T, N_T_double = 1200;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -39,40 +39,11 @@ int main(int argc, char** argv) {
     }
     string message_backup = message;
 
-    EMatrix2 I2 = EMatrix2::Identity();
-    EMatrix2 x2, y2, z2;
-    x2 << 0,   1,
-          1,   0;
-    y2 << 0, -1i,
-          1i,  0;
-    z2 << 1,   0,
-          0,  -1;
-    x2 /= 2, y2 /= 2, z2 /= 2;
+    H0D << 0, 0.00820226918, 0.01558608386;
 
-    Complex omega_1, omega_2, omega_3, J12, J13, J23;
-    // omega_1 = 2 * MY_PI * 1500;
-    // omega_2 = -2 * MY_PI * 2100;
-    // J12 = 2 * MY_PI * 100; 
-    omega_1 = 2 * MY_PI * 12039.6;
-    omega_2 = 2 * MY_PI * -6855.5;
-    omega_3 = 2 * MY_PI * -12039.0;
-    J12 = 2 * MY_PI * 54;
-    J13 = 2 * MY_PI * -1.3;
-    J23 = 2 * MY_PI * 35;
-
-    // H0D = (omega_1 * kroneckerProduct(z2, I2).eval() + omega_2 * kroneckerProduct(I2, z2).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
-    H0D = (omega_1 * kroneckerProduct3(z2, I2, I2) + omega_2 * kroneckerProduct3(I2, z2, I2) + omega_3 * kroneckerProduct3(I2, I2, z2) 
-          + J12 * kroneckerProduct3(z2, z2, I2) + J13 * kroneckerProduct3(z2, I2, z2) + J23 * kroneckerProduct3(I2, z2, z2)).diagonal();
-    // C = exp(H0D.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
-    
-    // EMatrix all_upper_triangle_ones;
-    // for (int i = 0; i < DIM; ++i)
-    //     for (int j = 0; j < DIM; ++j)
-    //         all_upper_triangle_ones(i, j) = i < j;
-    dipoles_upper[0] = (kroneckerProduct3(x2, I2, I2) + kroneckerProduct3(I2, x2, I2) + kroneckerProduct3(I2, I2, x2)).triangularView<Eigen::Upper>();
-    dipoles_upper[1] = (kroneckerProduct3(y2, I2, I2) + kroneckerProduct3(I2, y2, I2) + kroneckerProduct3(I2, I2, y2)).triangularView<Eigen::Upper>();
-
-
+    dipoles_upper[0] <<  0, 0.06116130402, -0.01272999623,
+                 0, 0,              0.0834968862,
+                 0, 0,              0;
     start_label:
 
 #ifdef USE_FIELD_FILE
@@ -183,14 +154,9 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 1, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 4, 0, 0, 0,
-                0, 0, 2, 0, 0, 0, 0, 0,
-                0, 0, 0, 3, 0, 0, 5, 0;
+                0, 0, 0,
+                0, 0, 0,
+                1, 0, 0;
 
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {

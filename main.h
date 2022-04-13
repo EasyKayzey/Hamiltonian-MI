@@ -36,13 +36,13 @@
 using namespace std;
 using namespace Eigen;
 
-const int DIM = 8;
+const int DIM = 3;
 const int L = (DIM * (DIM - 1)) / 2;
 const double HBAR = 1;
 const int N_TO = 1;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
-const int N_FIELDS = 2;
+const int N_FIELDS = 1;
 
 const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
 
@@ -97,9 +97,9 @@ inline double normalize(double rand, double min, double max) {
     return rand * (max - min) + min;
 }
 
-inline EMatrix kroneckerProduct3(const EMatrix2& A, const EMatrix2& B, const EMatrix2& C) {
-	return kroneckerProduct(A, kroneckerProduct(B, C).eval()).eval();
-}
+// inline EMatrix kroneckerProduct3(const EMatrix2& A, const EMatrix2& B, const EMatrix2& C) {
+// 	return kroneckerProduct(A, kroneckerProduct(B, C).eval()).eval();
+// }
 
 // Here's a hash function for arrays:
 template<typename T, size_t N>
