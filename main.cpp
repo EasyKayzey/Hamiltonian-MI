@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 20000, DELTA_T, N_T_double = 1200;
+double T = 10, DELTA_T, N_T_double = 1000;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -39,11 +39,15 @@ int main(int argc, char** argv) {
     }
     string message_backup = message;
 
-    H0D << 0, 0.00820226918, 0.01558608386;
+    H0D << 0, 3, 8, 15, 19, 28;
 
-    dipoles_upper[0] <<  0, 0.06116130402, -0.01272999623,
-                 0, 0,              0.0834968862,
-                 0, 0,              0;
+    dipoles_upper[0] <<  0,   1,  .5,  .25, 0,  0,
+                       0,   0,  0,   .5,  0,  0,
+                       0,  0,  0,   1,   .5, .25,
+                       0, 0, 0,   0,   0,  .5,
+                       0,   0,  0,  0,   0,  1,
+                       0,   0,  0, 0,  0,  0;
+
     start_label:
 
 #ifdef USE_FIELD_FILE
@@ -98,11 +102,12 @@ int main(int argc, char** argv) {
     {
         ifstream field_file(path + ffn + ".txt");
         if (field_file.good()) {
-            cout << "Using " << N_FIELDS << " fields from " << ffn << ".txt" << endl;
+            cout << "Using field from " << ffn << ".txt" << endl;
             try {
                 double d;
                 for (int i = 0; i < N_T; ++i) {
                     for (int j = 0; j < N_FIELDS; ++j) {
+                        field_file >> d; // doubled up because of the stupid time input
                         field_file >> d;
                         fields[j][i] = d * field_scale_factor;
                     }
@@ -154,9 +159,12 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 0, 0,
-                0, 0, 0,
-                1, 0, 0;
+                0, 0, 0,0, 0, 0,
+                1, 0, 0,0, 0, 0,
+                1, 0, 0,0, 0, 0,
+                0, 0, 0,0, 0, 0,
+                0, 0, 0,0, 0, 0,
+                0, 0, 0,1, 1, 0;
 
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
