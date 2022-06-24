@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 10, DELTA_T, N_T_double = 1000;
+double T = 10000, DELTA_T, N_T_double = 500;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -39,14 +39,12 @@ int main(int argc, char** argv) {
     }
     string message_backup = message;
 
-    H0D << 0, 3, 8, 15, 19, 28;
+    H0D << 0,   0.0082,  .016;
 
-    dipoles_upper[0] <<  0,   1,  .5,  .25, 0,  0,
-                       0,   0,  0,   .5,  0,  0,
-                       0,  0,  0,   1,   .5, .25,
-                       0, 0, 0,   0,   0,  .5,
-                       0,   0,  0,  0,   0,  1,
-                       0,   0,  0, 0,  0,  0;
+    dipoles_upper[0] <<  0,   0.061,  -.013,
+                       0,   0,  .083,
+                       0,  0,  0;
+
 
     start_label:
 
@@ -159,12 +157,10 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 0, 0,0, 0, 0,
-                1, 0, 0,0, 0, 0,
-                1, 0, 0,0, 0, 0,
-                0, 0, 0,0, 0, 0,
-                0, 0, 0,0, 0, 0,
-                0, 0, 0,1, 1, 0;
+                0, 0, 0,
+                0, 0, 0,
+                1, 0, 0;
+
 
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
