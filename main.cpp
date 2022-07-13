@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 10000, DELTA_T, N_T_double = 500;
+double T = HEADER_TIME, DELTA_T, N_T_double = HEADER_NTD * TIME_POINT_SCALE;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -103,11 +103,13 @@ int main(int argc, char** argv) {
             cout << "Using field from " << ffn << ".txt" << endl;
             try {
                 double d;
-                for (int i = 0; i < N_T; ++i) {
+                for (int i = 0; i < N_T / TIME_POINT_SCALE; ++i) {
                     for (int j = 0; j < N_FIELDS; ++j) {
                         field_file >> d; // doubled up because of the stupid time input
                         field_file >> d;
-                        fields[j][i] = d * field_scale_factor;
+                        for (int k = 0; k < TIME_POINT_SCALE; ++k) {
+                            fields[j][i * TIME_POINT_SCALE + k] = d;
+                        }
                     }
                 }
                 if (!field_file.eof()) {
@@ -211,7 +213,7 @@ int main(int argc, char** argv) {
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, TIME_POINT_SCALE, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
     double out_doubles[] = {T, HBAR, field_scale_factor};
 
     if (message.empty())
