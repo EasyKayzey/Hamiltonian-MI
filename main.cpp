@@ -41,10 +41,10 @@ int main(int argc, char** argv) {
 
     H0D << 0, 3, 8, 15, 19, 28;
 
-    dipoles_upper[0] <<  0,   1,  .5,  .25, 0,  0,
-                       0,   0,  0,   .5,  0,  0,
-                       0,  0,  0,   1,   .5, .25,
-                       0, 0, 0,   0,   0,  .5,
+    dipoles_upper[0] <<  0,   1,  1,  1, 0,  0,
+                       0,   0,  0,   1,  0,  0,
+                       0,  0,  0,   1,   1, 1,
+                       0, 0, 0,   0,   0,  1,
                        0,   0,  0,  0,   0,  1,
                        0,   0,  0, 0,  0,  0;
 
@@ -60,9 +60,12 @@ int main(int argc, char** argv) {
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
     
-    cout << "Amplitude multiplier?" << endl;
+    message = message + "=" + ffn;
+    ffn = "fields/gaurav_algo_fields/field_gen_B5/ctrl_amps_final" + ffn;
+
     string amul;
-    cin >> amul;
+    // cout << "Amplitude multiplier?" << endl;
+    // cin >> amul;
     if (amul.empty() || amul == "1")
         field_scale_factor = 1;
     else {
@@ -72,8 +75,8 @@ int main(int argc, char** argv) {
 
     string init_state_str;
     int init_state;
-    cout << "Initial state index?" << endl;
-    cin >> init_state_str;
+    // cout << "Initial state index?" << endl;
+    // cin >> init_state_str;
     if (!init_state_str.empty() && init_state_str != "0") {
         init_state = stoi(init_state_str);
         message += (message.length() == 0 ? "" : "_") + init_state_str;
@@ -81,10 +84,26 @@ int main(int argc, char** argv) {
         init_state = 0;
     }
         
+    string t_str;
+    cout << "T?" << endl;
+    cin >> t_str;
+    if (!t_str.empty() && t_str != "0") {
+        T = stod(init_state_str);
+        message += (message.length() == 0 ? "" : "_") + (int) T;
+    }
+
+    string n_t_str;
+    cout << "N_T?" << endl;
+    cin >> n_t_str;
+    if (!n_t_str.empty() && n_t_str != "0") {
+        N_T = stoi(n_t_str);
+        message += (message.length() == 0 ? "" : "_") + n_t_str;
+    }
+        
 
     string message_append;
-    cout << "Message append? (can use # for no)" << endl;
-    cin >> message_append;
+    // cout << "Message append? (can use # for no)" << endl;
+    // cin >> message_append;
     if (message_append.length() != 0 && message_append != "#")
         message += (message.length() == 0 ? "" : "_") + message_append;
 
@@ -105,11 +124,15 @@ int main(int argc, char** argv) {
             cout << "Using field from " << ffn << ".txt" << endl;
             try {
                 double d;
-                for (int i = 0; i < N_T; ++i) {
+                const int TLS = 1;
+                for (int i = 0; i < N_T/TLS; ++i) {
                     for (int j = 0; j < N_FIELDS; ++j) {
                         field_file >> d; // doubled up because of the stupid time input
                         field_file >> d;
-                        fields[j][i] = d * field_scale_factor;
+                        fields[j][i] = d;
+                        // for (int k = 0; k < TLS; ++k) {
+                        //     fields[j][i*TLS + k] = d;
+                        // }
                     }
                 }
                 if (!field_file.eof()) {
