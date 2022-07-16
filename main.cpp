@@ -186,10 +186,10 @@ int main(int argc, char** argv) {
         encoding_integers << 
                 0, 0, 0,0, 0, 0,
                 1, 0, 0,0, 0, 0,
-                1, 0, 0,0, 0, 0,
+                2, 0, 0,0, 0, 0,
                 0, 0, 0,0, 0, 0,
                 0, 0, 0,0, 0, 0,
-                0, 0, 0,1, 1, 0;
+                0, 0, 0,3, 4, 0;
 
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
