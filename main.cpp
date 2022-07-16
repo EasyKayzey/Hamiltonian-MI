@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 15, DELTA_T, N_T_double = 500;
+double T = 6, DELTA_T, N_T_double = 500;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -60,10 +60,9 @@ int main(int argc, char** argv) {
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
     
-    message = message + "=" + ffn;
-    ffn = "fields/gaurav_algo_fields/field_gen_B5/ctrl_amps_final" + ffn;
+    ffn = "fields/gaurav_algo_fields/field_gen_B5/ctrl_amps_final_" + ffn;
 
-    string amul;
+    string amul = "";
     // cout << "Amplitude multiplier?" << endl;
     // cin >> amul;
     if (amul.empty() || amul == "1")
@@ -73,7 +72,7 @@ int main(int argc, char** argv) {
         field_scale_factor = stod(amul);
     }
 
-    string init_state_str;
+    string init_state_str = "";
     int init_state;
     // cout << "Initial state index?" << endl;
     // cin >> init_state_str;
@@ -84,24 +83,27 @@ int main(int argc, char** argv) {
         init_state = 0;
     }
         
-    string t_str;
+    string t_str = "";
     cout << "T?" << endl;
     cin >> t_str;
     if (!t_str.empty() && t_str != "0") {
-        T = stod(init_state_str);
+        T = stod(t_str);
         message += (message.length() == 0 ? "" : "_") + (int) T;
+        DELTA_T = T / N_T;
     }
 
-    string n_t_str;
-    cout << "N_T?" << endl;
-    cin >> n_t_str;
+    string n_t_str = "";
+    // cout << "N_T?" << endl;
+    // cin >> n_t_str;
     if (!n_t_str.empty() && n_t_str != "0") {
+        // cout << 'a';
         N_T = stoi(n_t_str);
         message += (message.length() == 0 ? "" : "_") + n_t_str;
+        DELTA_T = T / N_T;
     }
         
 
-    string message_append;
+    string message_append = "";
     // cout << "Message append? (can use # for no)" << endl;
     // cin >> message_append;
     if (message_append.length() != 0 && message_append != "#")
