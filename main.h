@@ -45,7 +45,7 @@ const int N_H = L;
 const int N_FIELDS = 1;
 const double HEADER_TIME = 2000;
 const double HEADER_NTD = 50;
-const double TIME_POINT_SCALE = 10;
+const int TIME_POINT_SCALE = 10;
 const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
 
 #define USE_LONG_DOUBLE false

@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
 
-    ffn = "fields/gaurav_algo_fields/field_gen_B5/ctrl_amps_final_" + ffn;
+    ffn = "fields/gaurav_algo_fields/" + ffn;
 
     string amul;
     // cout << "Amplitude multiplier?" << endl;
