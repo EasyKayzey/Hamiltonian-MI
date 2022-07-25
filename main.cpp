@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
         N_T = stoi(n_t_str);
         message += (message.length() == 0 ? "" : "_") + n_t_str;
         DELTA_T = T / N_T;
+        fill(fields.begin(), fields.end(), vector<double>(N_T));
     }
         
 
@@ -174,19 +175,21 @@ int main(int argc, char** argv) {
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = partial;
-    const enc_type cur_type = nonhermitian;
+    const enc_type cur_type = hermitian;
 
     if (cur_scheme == other) {
 
     } else if (cur_scheme == order) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
+        // encoding_integers << 
+        //         0, 2, 3,
+        //         0, 0, 4,
+        //         1, 0, 0;
         encoding_integers << 
-                0, 2, 3,
-                0, 0, 4,
+                0, 0, 0,
+                0, 0, 0,
                 1, 0, 0;
-
-
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
             encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
