@@ -57,10 +57,12 @@ int main(int argc, char** argv) {
     cin >> ffn;
     if (ffn.empty() || ffn == "n")
         ffn = "field_nmr";
-    
-    cout << "Amplitude multiplier?" << endl;
+
+    ffn = "fields/gaurav_algo_fields/field_gen_B5/ctrl_amps_final_" + ffn;
+
     string amul;
-    cin >> amul;
+    // cout << "Amplitude multiplier?" << endl;
+    // cin >> amul;
     if (amul.empty() || amul == "1")
         field_scale_factor = 1;
     else {
@@ -70,13 +72,32 @@ int main(int argc, char** argv) {
 
     string init_state_str;
     int init_state;
-    cout << "Initial state index?" << endl;
-    cin >> init_state_str;
+    // cout << "Initial state index?" << endl;
+    // cin >> init_state_str;
     if (!init_state_str.empty() && init_state_str != "0") {
         init_state = stoi(init_state_str);
         message += (message.length() == 0 ? "" : "_") + init_state_str;
     } else {
         init_state = 0;
+    }
+
+    string t_str;
+    cout << "T?" << endl;
+    cin >> t_str;
+    if (!t_str.empty() && t_str != "0") {
+        T = stod(t_str);
+        message += (message.length() == 0 ? "" : "_") + t_str;
+        DELTA_T = T / N_T;
+    }
+
+    string n_t_str;
+    cout << "N_T?" << endl;
+    cin >> n_t_str;
+    if (!n_t_str.empty() && n_t_str != "0") {
+        // cout << 'a';
+        N_T = stoi(n_t_str);
+        message += (message.length() == 0 ? "" : "_") + n_t_str;
+        DELTA_T = T / N_T;
     }
         
 
