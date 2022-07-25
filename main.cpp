@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 6, DELTA_T, N_T_double = 500;
+double T = 6, DELTA_T, N_T_double = 100;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -88,13 +88,13 @@ int main(int argc, char** argv) {
     cin >> t_str;
     if (!t_str.empty() && t_str != "0") {
         T = stod(t_str);
-        message += (message.length() == 0 ? "" : "_") + (int) T;
+        message += (message.length() == 0 ? "" : "_") + t_str;
         DELTA_T = T / N_T;
     }
 
     string n_t_str = "";
-    // cout << "N_T?" << endl;
-    // cin >> n_t_str;
+    cout << "N_T?" << endl;
+    cin >> n_t_str;
     if (!n_t_str.empty() && n_t_str != "0") {
         // cout << 'a';
         N_T = stoi(n_t_str);
@@ -131,10 +131,10 @@ int main(int argc, char** argv) {
                     for (int j = 0; j < N_FIELDS; ++j) {
                         field_file >> d; // doubled up because of the stupid time input
                         field_file >> d;
-                        fields[j][i] = d;
-                        // for (int k = 0; k < TLS; ++k) {
-                        //     fields[j][i*TLS + k] = d;
-                        // }
+                        // fields[j][i] = d;
+                        for (int k = 0; k < TLS; ++k) {
+                            fields[j][i*TLS + k] = d;
+                        }
                     }
                 }
                 if (!field_file.eof()) {
