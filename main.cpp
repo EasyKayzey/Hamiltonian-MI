@@ -161,6 +161,8 @@ int main(int argc, char** argv) {
     string ffn = "HARDCODED";
 #endif
 
+    cout << "Successfully read fields." << endl;
+
     EMatrix upper_triangle_ones = EMatrix::Zero();
     for (int i = 1; i < DIM; ++i)
         for (int j = 0; j < i; ++j)
@@ -172,7 +174,7 @@ int main(int argc, char** argv) {
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = partial;
-    const enc_type cur_type = hermitian;
+    const enc_type cur_type = nonhermitian;
 
     if (cur_scheme == other) {
 
@@ -180,8 +182,8 @@ int main(int argc, char** argv) {
         encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
         encoding_integers << 
-                0, 0, 0,
-                0, 0, 0,
+                0, 2, 3,
+                0, 0, 4,
                 1, 0, 0;
 
 
@@ -224,6 +226,7 @@ int main(int argc, char** argv) {
             throw runtime_error("ORD not set...");
     }
 
+    cout << "Running analysis..." << endl;
     vector<CArray> anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
