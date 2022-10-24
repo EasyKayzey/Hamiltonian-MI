@@ -12,6 +12,7 @@ DipoleSet dipoles_upper;
 EVector H0D;
 // EDMatrix C;
 array<ECovector, DIM> anal_pop;
+vector<pair<pair<vector<DArr>, EVector>, int>> s_pop_graphs;
 
 #define USE_FIELD_FILE
 #define USE_GOTO
@@ -238,7 +239,7 @@ int main(int argc, char** argv) {
     auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
+    ofstream outfile(string(path) + "SPOP_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
@@ -246,7 +247,7 @@ int main(int argc, char** argv) {
 
     if (message.empty())
         message = "#";
-    outfile << "HMR1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "SPOP " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
@@ -292,6 +293,20 @@ int main(int argc, char** argv) {
             outfile << d.imag() << ' ';
         outfile << endl;
     }   
+
+    outfile << "S POP GRAPHS:" << endl;
+
+    for (pair<pair<vector<DArr>, EVector>, int>& p : s_pop_graphs) {
+        outfile << p.second << endl;
+        outfile << p.first.second.real().transpose() << endl;
+        outfile << p.first.second.imag().transpose() << endl;
+        for (int i = 0; i < DIM; ++i) {
+            for (DArr &a : p.first.first) {
+                outfile << a[i] << ' ';
+            }
+            outfile << endl;
+        }
+    }
 
     if (!outfile.good())
         cerr << "Writing failed." << endl;
@@ -411,6 +426,7 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
         //     order_results[s] = evolve_initial_hermitian(fields, encoded, psi_i);
         // else
         order_results[s] = evolve_initial_nonhermitian(fields, encoded, psi_i);
+        s_pop_graphs.emplace_back(gen_pop_graphs(fields, encoded, psi_i), s); // this is lazy and takes twice as long to run as it should but whatever
     }
     if (hermitian && !hermitian)
         cout << "This print exists to remove an unused variable warning.\n";
