@@ -153,6 +153,8 @@ QCDATA*
 build/*
 main
 HMI*
+TARR*
+SPOP*
 field*.txt
 fields/*
 *.7z
