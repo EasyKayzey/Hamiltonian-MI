@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
 
     string init_state_str;
     int init_state;
-    // cout << "Initial state index?" << endl;
-    // cin >> init_state_str;
+    cout << "Initial state index?" << endl;
+    cin >> init_state_str;
     if (!init_state_str.empty() && init_state_str != "0") {
         init_state = stoi(init_state_str);
         message += (message.length() == 0 ? "" : "_") + init_state_str;
