@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
     }
 
     string t_str;
-    cout << "T?" << endl;
-    cin >> t_str;
+    // cout << "T?" << endl;
+    // cin >> t_str;
     if (!t_str.empty() && t_str != "0") {
         T = stod(t_str);
         message += (message.length() == 0 ? "" : "_") + t_str;
@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
     }
 
     string n_t_str;
-    cout << "N_T?" << endl;
-    cin >> n_t_str;
+    // cout << "N_T?" << endl;
+    // cin >> n_t_str;
     if (!n_t_str.empty() && n_t_str != "0") {
         // cout << 'a';
         N_T = stoi(n_t_str);
@@ -111,6 +111,8 @@ int main(int argc, char** argv) {
 
     EVector psi_i = EVector::Zero();
     psi_i[init_state] = 1;
+    // EVector psi_i;
+    // psi_i << 2.25974e-05+1.39985e-05i, 0.47164-0.881791i, -5.03996e-06-1.80181e-05i;
 
     for (int i = 0; i < DIM; ++i) {
         ECovector cur = ECovector::Zero();
