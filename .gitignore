@@ -153,5 +153,5 @@ QCDATA*
 build/*
 main
 HMI*
-field*.txt
+field.txt
 fields/*
