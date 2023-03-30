@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, TIME_POINT_SCALE, N_FIELDS, ORD, BASE, 
-                      cur_scheme, cur_type, (use_t_arr ? N_T : 0), 0,0,0,0};
+                      cur_scheme, cur_type, (use_t_arr ? N_T : 1), 0,0,0,0};
     double out_doubles[] = {T, HBAR, field_scale_factor, 0,0,0,0};
 
     if (message.empty())
@@ -306,6 +306,7 @@ int main(int argc, char** argv) {
         }
         N_T = N_T_back;
     } else {
+        outfile << "End analysis:" << endl;
         for (CArray& arr : anal_res_end) {
             for (Complex d : arr)
                 outfile << d.real() << ' ';
