@@ -1,7 +1,7 @@
 #include "main.h"
 #include "omp.h"
 
-double T = HEADER_TIME, DELTA_T, N_T_double = HEADER_NTD * TIME_POINT_SCALE;
+double T;
 int N_T;
 int ORD = 0;
 int BASE = 7;
@@ -23,13 +23,6 @@ int main(int argc, char** argv) {
         assert(now == main_start_time);
         ptime();
     }
-#ifndef USE_FIELD_FILE
-    T = 20000;
-    N_T = 1200;
-#endif
-
-    N_T = (int) round(N_T_double);
-    DELTA_T = T / N_T;
 
     string message = "";
     if (argc > 1) {
@@ -61,16 +54,6 @@ int main(int argc, char** argv) {
 
     ffn = "fields/gaurav_algo_fields/" + ffn;
 
-    string amul = "";
-    // cout << "Amplitude multiplier?" << endl;
-    // cin >> amul;
-    if (amul.empty() || amul == "1")
-        field_scale_factor = 1;
-    else {
-        message += (message.length() == 0 ? "" : "_") + amul;
-        field_scale_factor = stod(amul);
-    }
-
     string init_state_str = "";
     int init_state;
     cout << "Initial state index?" << endl;
@@ -82,26 +65,6 @@ int main(int argc, char** argv) {
         init_state = 0;
     }
 
-    string t_str = "";
-    // cout << "T?" << endl;
-    // cin >> t_str;
-    if (!t_str.empty() && t_str != "0") {
-        T = stod(t_str);
-        message += (message.length() == 0 ? "" : "_") + t_str;
-        DELTA_T = T / N_T;
-    }
-
-    string n_t_str = "";
-    // cout << "N_T?" << endl;
-    // cin >> n_t_str;
-    if (!n_t_str.empty() && n_t_str != "0") {
-        // cout << 'a';
-        N_T = stoi(n_t_str);
-        message += (message.length() == 0 ? "" : "_") + n_t_str;
-        DELTA_T = T / N_T;
-        fill(fields.begin(), fields.end(), vector<double>(N_T));
-    }
-        
 
     string message_append = "";
     cout << "Message append? (can use # for no)" << endl;
@@ -128,9 +91,26 @@ int main(int argc, char** argv) {
             cout << "Using field from " << ffn << ".txt" << endl;
             try {
                 double d;
+                int n_fields, n_skip;
+                string s_tmp;
+                getline(field_file, s_tmp);
+                if (s_tmp != "TIME N_T N_FIELDS SKIP")
+                    throw runtime_error("Field file header " + s_tmp + " incorrect.");
+                field_file >> T;
+                field_file >> N_T;
+                field_file >> n_fields;
+                if (n_fields != N_FIELDS)
+                    throw runtime_error("Field file N_FIELDS=" + n_fields + " does not match header " + N_FIELDS + ".");
+                field_file >> n_skip;
+                cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
+                getline(field_file, s_tmp);
+                if (s_tmp != "FIELDS")
+                    throw runtime_error("Field file line 3 " + s_tmp + " incorrect.");
+
                 for (int i = 0; i < N_T / TIME_POINT_SCALE; ++i) {
+                    for (int k = 0; k < n_skip; ++k)
+                        field_file >> d;
                     for (int j = 0; j < N_FIELDS; ++j) {
-                        field_file >> d; // doubled up because of the stupid time input
                         field_file >> d;
                         for (int k = 0; k < TIME_POINT_SCALE; ++k) {
                             fields[j][i * TIME_POINT_SCALE + k] = d;
@@ -145,6 +125,7 @@ int main(int argc, char** argv) {
                 }
             } catch (runtime_error& e) {
                 cout << "Reading fields failed... Error: " << e.what() << endl;
+                cerr << "Reading fields failed... Error: " << e.what() << endl;
                 exit(0);
             }
         } else {
@@ -380,7 +361,7 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
 
 //     // vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
 //     // for (int i = 0; i < N_T; ++i)
-//     //     E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
+//     //     E[i] = exp(1i * T / N_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
 
 //     // vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
 //     // it[0] = PdC * psi_i;
@@ -407,7 +388,7 @@ OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipole
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
     it[0] = psi_i;
     for (int i = 1; i <= N_T; ++i)
-        it[i] = (-1.i * Hs[i-1] * DELTA_T).exp() * it[i - 1];
+        it[i] = (-1.i * Hs[i-1] * T / N_T).exp() * it[i - 1];
 
     OArr samples{};
     for (int i = 0; i < N_TO; ++i)
@@ -499,7 +480,7 @@ pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleS
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
     it[0] = psi_i;
     for (int i = 1; i <= N_T; ++i)
-        it[i] = (-1.i * Hs[i-1] * DELTA_T).exp() * it[i - 1];
+        it[i] = (-1.i * Hs[i-1] * T / N_T).exp() * it[i - 1];
 
     vector<DArr> samples;
     for (EVector& iv : it) {
