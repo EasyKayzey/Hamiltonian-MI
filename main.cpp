@@ -100,7 +100,8 @@ int main(int argc, char** argv) {
                 field_file >> N_T;
                 field_file >> n_fields;
                 if (n_fields != N_FIELDS)
-                    throw runtime_error("Field file N_FIELDS=" + n_fields + " does not match header " + N_FIELDS + ".");
+                    throw runtime_error("Field file N_FIELDS=" + to_string(n_fields)
+                                         + " does not match header " + to_string(N_FIELDS) + ".");
                 field_file >> n_skip;
                 cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
                 getline(field_file, s_tmp);
