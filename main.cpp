@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     FieldSet fields{};
     fill(fields.begin(), fields.end(), vector<double>(N_T));
     // string ffn = string(argv[1]);
-    string ffn;
+    string ffn = "";
     cout << "Field file name?" << endl;
     cin >> ffn;
     if (ffn.empty() || ffn == "n")
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
     ffn = "fields/gaurav_algo_fields/" + ffn;
 
-    string amul;
+    string amul = "";
     // cout << "Amplitude multiplier?" << endl;
     // cin >> amul;
     if (amul.empty() || amul == "1")
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
         field_scale_factor = stod(amul);
     }
 
-    string init_state_str;
+    string init_state_str = "";
     int init_state;
     cout << "Initial state index?" << endl;
     cin >> init_state_str;
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         init_state = 0;
     }
 
-    string t_str;
+    string t_str = "";
     // cout << "T?" << endl;
     // cin >> t_str;
     if (!t_str.empty() && t_str != "0") {
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
         DELTA_T = T / N_T;
     }
 
-    string n_t_str;
+    string n_t_str = "";
     // cout << "N_T?" << endl;
     // cin >> n_t_str;
     if (!n_t_str.empty() && n_t_str != "0") {
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     }
         
 
-    string message_append;
+    string message_append = "";
     cout << "Message append? (can use # for no)" << endl;
     cin >> message_append;
     if (message_append.length() != 0 && message_append != "#")
