@@ -155,3 +155,6 @@ main
 HMI*
 field.txt
 fields/*
+TARR*
+SPOP*
+*.7z
