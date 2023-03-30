@@ -1,18 +1,20 @@
 #include "main.h"
 #include "omp.h"
 
-double T = 20000, DELTA_T, N_T_double = 1200;
+double T = HEADER_TIME, DELTA_T, N_T_double = HEADER_NTD * TIME_POINT_SCALE;
 int N_T;
 int ORD = 0;
-int BASE = 20;
+int BASE = 7;
 int main_start_time;
+double field_scale_factor = 1;
 
-EMatrix mu_t_upper;
+DipoleSet dipoles_upper;
 EVector H0D;
-EDMatrix C;
+// EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-//#define USE_FIELD_FILE
+#define USE_FIELD_FILE
+#define USE_GOTO
 int main(int argc, char** argv) {
     { // this will only work until 2038 so be careful
         time_t now;
@@ -28,23 +30,89 @@ int main(int argc, char** argv) {
     N_T = (int) round(N_T_double);
     DELTA_T = T / N_T;
 
-    string message = "AT1";
+    string message = "";
     if (argc > 1) {
         for (int i = 1; i < argc; ++i) {
             message += '_';
             message += argv[i];
         }
     }
+    string message_backup = message;
 
-    H0D << 0, 0.00820226918, 0.01558608386;
-    C = exp(H0D.array() * -1i * DELTA_T / 2 / HBAR).matrix().asDiagonal();
+    H0D << 0,   0.0082,  .016;
 
-    mu_t_upper   <<  0, 0.06116130402, -0.01272999623,
-                     0, 0,              0.0834968862,
-                     0, 0,              0;
+    dipoles_upper[0] <<  0,   0.061,  -.013,
+                       0,   0,  .083,
+                       0,  0,  0;
+
+
+    start_label:
+
+#ifdef USE_FIELD_FILE
+    FieldSet fields{};
+    fill(fields.begin(), fields.end(), vector<double>(N_T));
+    // string ffn = string(argv[1]);
+    string ffn;
+    cout << "Field file name?" << endl;
+    cin >> ffn;
+    if (ffn.empty() || ffn == "n")
+        ffn = "field_nmr";
+
+    ffn = "fields/gaurav_algo_fields/" + ffn;
+
+    string amul;
+    // cout << "Amplitude multiplier?" << endl;
+    // cin >> amul;
+    if (amul.empty() || amul == "1")
+        field_scale_factor = 1;
+    else {
+        message += (message.length() == 0 ? "" : "_") + amul;
+        field_scale_factor = stod(amul);
+    }
+
+    string init_state_str;
+    int init_state;
+    cout << "Initial state index?" << endl;
+    cin >> init_state_str;
+    if (!init_state_str.empty() && init_state_str != "0") {
+        init_state = stoi(init_state_str);
+        message += (message.length() == 0 ? "" : "_") + init_state_str;
+    } else {
+        init_state = 0;
+    }
+
+    string t_str;
+    // cout << "T?" << endl;
+    // cin >> t_str;
+    if (!t_str.empty() && t_str != "0") {
+        T = stod(t_str);
+        message += (message.length() == 0 ? "" : "_") + t_str;
+        DELTA_T = T / N_T;
+    }
+
+    string n_t_str;
+    // cout << "N_T?" << endl;
+    // cin >> n_t_str;
+    if (!n_t_str.empty() && n_t_str != "0") {
+        // cout << 'a';
+        N_T = stoi(n_t_str);
+        message += (message.length() == 0 ? "" : "_") + n_t_str;
+        DELTA_T = T / N_T;
+        fill(fields.begin(), fields.end(), vector<double>(N_T));
+    }
+        
+
+    string message_append;
+    cout << "Message append? (can use # for no)" << endl;
+    cin >> message_append;
+    if (message_append.length() != 0 && message_append != "#")
+        message += (message.length() == 0 ? "" : "_") + message_append;
+
 
     EVector psi_i = EVector::Zero();
-    psi_i[0] = 1;
+    psi_i[init_state] = 1;
+    // EVector psi_i;
+    // psi_i << 2.25974e-05+1.39985e-05i, 0.47164-0.881791i, -5.03996e-06-1.80181e-05i;
 
     for (int i = 0; i < DIM; ++i) {
         ECovector cur = ECovector::Zero();
@@ -52,42 +120,42 @@ int main(int argc, char** argv) {
         anal_pop[i] = cur;
     }
 
-#ifdef USE_FIELD_FILE
-    FGenome field_genome{};
-    // string ffn = string(argv[1]);
-    string ffn;
-    cout << "Field file name?" << endl;
-    cin >> ffn;
-    if (ffn.empty() || ffn == "n")
-        ffn = "field";
 
     {
         ifstream field_file(path + ffn + ".txt");
         if (field_file.good()) {
             cout << "Using field from " << ffn << ".txt" << endl;
             try {
-                int al;
-                field_file >> al;
-                int fn = al;
-                if (fn == 1) {
-                    for (int j = 0; j < L; ++j)
-                        field_file >> field_genome[j].first;
-                    for (int j = 0; j < L; ++j)
-                        field_file >> field_genome[j].second;
-                } else if (fn == 0)
-                    cout << "Not using fields." << endl;
-                else
-                    throw runtime_error("Unexpected value of input file fn.");
-            } catch (...) {
-                cout << "Reading fields failed..." << endl;
+                double d;
+                for (int i = 0; i < N_T / TIME_POINT_SCALE; ++i) {
+                    for (int j = 0; j < N_FIELDS; ++j) {
+                        field_file >> d; // doubled up because of the stupid time input
+                        field_file >> d;
+                        for (int k = 0; k < TIME_POINT_SCALE; ++k) {
+                            fields[j][i * TIME_POINT_SCALE + k] = d;
+                        }
+                    }
+                }
+                if (!field_file.eof()) {
+                    char c;
+                    while (field_file.get(c))
+                        if (!std::isspace(c))
+                            throw runtime_error("Field file too long...");
+                }
+            } catch (runtime_error& e) {
+                cout << "Reading fields failed... Error: " << e.what() << endl;
                 exit(0);
             }
         } else {
             cout << "Reading fields failed..." << endl;
+#ifdef USE_GOTO
+            message = message_backup;
+            goto start_label;
+#else
             exit(0);
+#endif
         }
     }
-    vector<double> field = get_field(field_genome);
 #else
     cout << "Using hardcoded field..." << endl;
     vector<double> field = {-0.000311776, -0.000320269, -0.000321936, -0.000315862, -0.000301276, -0.000277617, -0.000244615, -0.000202348, -0.000151293, -9.23613e-05, -2.69033e-05, 4.33064e-05, 0.000116116, 0.000189071, 0.000259515, 0.000324709, 0.000381975, 0.000428838, 0.000463172, 0.000483332, 0.000488261, 0.000477569, 0.000451574, 0.000411291, 0.000358382, 0.000295064, 0.000223972, 0.000147999, 7.01187e-05, -6.80498e-06, -8.01877e-05, -0.000147879, -0.000208282, -0.000260426, -0.000303987, -0.000339263, -0.000367085, -0.000388686, -0.000405531, -0.000419121, -0.000430782, -0.000441468, -0.000451578, -0.000460831, -0.000468181, -0.000471818, -0.000469233, -0.000457377, -0.000432878, -0.000392333, -0.00033264, -0.000251345, -0.000146996, -1.94452e-05, 0.000129906, 0.000297955, 0.000479858, 0.000669122, 0.000857826, 0.00103697, 0.00119694, 0.00132804, 0.00142112, 0.00146819, 0.00146299, 0.00140151, 0.00128239, 0.00110717, 0.000880379, 0.000609401, 0.000304183, -2.32333e-05, -0.000359332, -0.000689855, -0.00100058, -0.00127815, -0.0015108, -0.00168905, -0.00180623, -0.00185886, -0.0018468, -0.0017732, -0.0016443, -0.00146892, -0.00125791, -0.00102339, -0.000777921, -0.000533719, -0.000301814, -9.13622e-05, 9.09272e-05, 0.000241176, 0.000358508, 0.000444999, 0.000505391, 0.000546604, 0.000577067, 0.000605923, 0.000642161, 0.000693737, 0.000766761, 0.000864806, 0.0009884, 0.00113474, 0.0012977, 0.001468, 0.00163382, 0.00178144, 0.00189624, 0.0019637, 0.00197052, 0.00190571, 0.00176154, 0.00153433, 0.00122501, 0.000839381, 0.00038804, -0.000113975, -0.000647871, -0.00119204, -0.0017232, -0.00221768, -0.00265273, -0.00300787, -0.00326601, -0.0034145, -0.00344586, -0.00335824, -0.00315554, -0.00284721, -0.00244769, -0.0019756, -0.00145264, -0.000902351, -0.00034875, 0.000185051, 0.000678143, 0.00111297, 0.00147623, 0.00175953, 0.00195968, 0.0020786, 0.002123, 0.00210359, 0.00203415, 0.00193034, 0.00180841, 0.00168389, 0.00157034, 0.00147829, 0.00141443, 0.00138104, 0.00137583, 0.00139217, 0.00141953, 0.00144444, 0.00145149, 0.0014247, 0.00134883, 0.00121078, 0.0010008, 0.000713537, 0.000348797, -8.80539e-05, -0.000586064, -0.00112905, -0.00169635, -0.00226385, -0.00280533, -0.00329396, -0.00370389, -0.00401179, -0.00419832, -0.00424935, -0.00415697, -0.00392001, -0.00354435, -0.00304266, -0.00243385, -0.0017421, -0.000995573, -0.000224913, 0.000538447, 0.00126399, 0.00192378, 0.00249397, 0.002956, 0.00329755, 0.00351303, 0.00360364, 0.00357702, 0.00344651, 0.00323004, 0.0029487, 0.00262524, 0.00228239, 0.00194128, 0.00162002, 0.00133255, 0.00108777, 0.000889101, 0.000734517, 0.000616889, 0.000524804, 0.000443676, 0.000357111, 0.000248416, 0.000102148, -9.44166e-05, -0.000349993, -0.000668284, -0.00104733, -0.00147924, -0.00195044, -0.0024422, -0.00293167, -0.00339321, -0.00379993, -0.00412536, -0.00434522, -0.00443903, -0.00439155, -0.00419399, -0.00384481, -0.00335006, -0.00272339, -0.00198549, -0.00116315, -0.000287898, 0.000605593, 0.00148141, 0.00230435, 0.00304183, 0.00366568, 0.00415369, 0.00449073, 0.00466951, 0.00469079, 0.00456312, 0.00430213, 0.00392927, 0.00347035, 0.00295377, 0.00240855, 0.00186257, 0.00134074, 0.00086354, 0.000445932, 9.66104e-05, -0.000182212, -0.00039457, -0.000550056, -0.000662738, -0.000749758, -0.000829731, -0.000921034, -0.00104014, -0.00120008, -0.0014092, -0.00167022, -0.00197974, -0.00232823, -0.0027004, -0.00307614, -0.00343167, -0.00374119, -0.00397855, -0.00411913, -0.0041416, -0.00402959, -0.00377302, -0.00336915, -0.00282314, -0.00214813, -0.00136484, -0.000500688, 0.000411546, 0.00133545, 0.00223292, 0.00306632, 0.00380057, 0.00440517, 0.00485595, 0.00513642, 0.00523872, 0.00516389, 0.00492176, 0.00453018, 0.00401379, 0.00340236, 0.0027289, 0.00202755, 0.00133147, 0.000670895, 7.13522e-05, -0.00044765, -0.000873564, -0.00120121, -0.0014327, -0.00157681, -0.00164795, -0.00166479, -0.0016485, -0.00162101, -0.0016031, -0.00161271, -0.00166341, -0.00176326, -0.00191403, -0.00211099, -0.00234305, -0.00259354, -0.00284131, -0.00306224, -0.00323099, -0.0033229, -0.00331589, -0.00319224, -0.00294013, -0.00255485, -0.00203953, -0.00140538, -0.000671447, 0.00013619, 0.000985716, 0.00184127, 0.00266496, 0.00341904, 0.00406819, 0.00458162, 0.00493497, 0.00511181, 0.00510466, 0.00491546, 0.00455542, 0.00404429, 0.00340914, 0.00268263, 0.00190101, 0.00110193, 0.00032216, -0.000404543, -0.0010493, -0.00158967, -0.00201072, -0.00230559, -0.00247552, -0.00252938, -0.00248264, -0.00235602, -0.00217376, -0.00196171, -0.00174538, -0.00154807, -0.00138909, -0.00128247, -0.00123588, -0.00125019, -0.00131941, -0.00143124, -0.00156802, -0.00170811, -0.00182761, -0.00190224, -0.00190928, -0.00182949, -0.00164874, -0.0013594, -0.000961244, -0.000461887, 
@@ -96,35 +164,42 @@ int main(int argc, char** argv) {
     string ffn = "HARDCODED";
 #endif
 
+    cout << "Successfully read fields." << endl;
+
     EMatrix upper_triangle_ones = EMatrix::Zero();
     for (int i = 1; i < DIM; ++i)
         for (int j = 0; j < i; ++j)
-            if (mu_t_upper(i, j) != mu_t_upper(j, i))
-                upper_triangle_ones(i, j) = 1.;
-    
-    EMatrix encoding_integers;
-    enum enc_scheme { other, partial, full };
+            for (EMatrix& upper : dipoles_upper)
+                if (upper(i, j) != upper(j, i))
+                    upper_triangle_ones(i, j) = 1.;
+
+ EMatrix encoding_integers;
+    enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = full;
-    const enc_type cur_type = antihermitian;
+    const enc_scheme cur_scheme = partial;
+    const enc_type cur_type = hermitian;
 
     if (cur_scheme == other) {
 
+    } else if (cur_scheme == order) {
+        encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
     } else if (cur_scheme == partial) {
+        // encoding_integers << 
+        //         0, 2, 3,
+        //         0, 0, 4,
+        //         1, 0, 0;
         encoding_integers << 
-                0, 1, 2, 3, 0, 0,
-                0, 0, 4, 5, 6, 0,
-                0, 0, 0, 7, 8, 0,
-                0, 0, 0, 0, 9, 0,
-                0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0;
+                0, 0, 0,
+                0, 0, 0,
+                1, 0, 0;
     } else if (cur_scheme == full) {
         if (cur_type == nonhermitian) {
-            encoding_integers = upper_triangle_ones + upper_triangle_ones.transpose();
+            encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
         } else {
             encoding_integers = upper_triangle_ones;
         }
         int ctr = 0;
+
         for (Complex& d : encoding_integers.reshaped())
             if (d.real() != 0)
                 d = (double) ++ctr;
@@ -133,9 +208,9 @@ int main(int argc, char** argv) {
     }
 
     if (cur_type == hermitian) {
-        encoding_integers = (-encoding_integers + encoding_integers.transpose()).eval();
+        encoding_integers = (encoding_integers - encoding_integers.adjoint()).eval();
     } else if (cur_type == antihermitian) {
-        encoding_integers =  (encoding_integers + encoding_integers.transpose()).eval();
+        encoding_integers = (encoding_integers + encoding_integers.adjoint()).eval();
     } else if (cur_type == nonhermitian) {
         // do nothing
     } else {
@@ -156,17 +231,23 @@ int main(int argc, char** argv) {
             throw runtime_error("ORD not set...");
     }
 
-    vector<CArray> anal_res = run_order_analysis(field, psi_i, hermitian ? true : false, encoding_integers);
+    cout << "Running analysis..." << endl;
+    vector<CArray> anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
+
+    DipoleSet dipoles = dipoles_upper;
+    for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
+    auto PGR = gen_pop_graphs(fields, dipoles, psi_i);
 
 
-    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn + (message == "#" ? "" : "_" + message) + ".txt");
+    ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
+                     + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, N_OBS, ORD, BASE};
-    double out_doubles[] = {T, HBAR};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, TIME_POINT_SCALE, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
+    double out_doubles[] = {T, HBAR, field_scale_factor};
 
     if (message.empty())
         message = "#";
-    outfile << "HMI2 " << 0 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "HMR1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
@@ -178,15 +259,29 @@ int main(int argc, char** argv) {
 
     outfile << H0D.real().transpose() << endl;
 
-    outfile << mu_t_upper.real() + mu_t_upper.real().transpose() << endl;
+    for (EMatrix& m : dipoles_upper)
+        outfile << m + m.adjoint() << endl;
 
     outfile << psi_i.real().transpose() << endl;
+    outfile << psi_i.imag().transpose() << endl;
 
-    outfile << "Field:" << endl;
-\
-    for (double d : field)
-        outfile << d << ' ';
-    outfile << endl;
+    outfile << PGR.second.real().transpose() << endl;
+    outfile << PGR.second.imag().transpose() << endl;
+
+    for (int i = 0; i < DIM; ++i) {
+        for (DArr &a : PGR.first) {
+            outfile << a[i] << ' ';
+        }
+        outfile << endl;
+    }
+
+    outfile << "Fields:" << endl;
+
+    for (vector<double>& field : fields) {
+        for (double d : field)
+            outfile << d << ' ';
+        outfile << endl;
+    }
 
     outfile << encoding_integers.real() << endl;
 
@@ -204,6 +299,11 @@ int main(int argc, char** argv) {
 
     outfile.close();
 
+#ifdef USE_GOTO
+    message = message_backup;
+    goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
+    // But right now, I just want to have main_start_time stay the same without all the work involved, so too bad.
+#endif
 }
 
 
@@ -246,22 +346,44 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     return {{CP, PdC}, lambda};
 }
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i) {
-    auto diag_ret = diag_vec(mu, C);
-    EVector lambda = diag_ret.second;
-    EMatrix CP = diag_ret.first.first;
-    EMatrix PdC = diag_ret.first.second;
-    EMatrix PdCCP = PdC * CP;
+// OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
+//     throw runtime_error("Not implemented right now");
+//     // auto diag_ret = diag_vec(mu, C);
+//     // EVector lambda = diag_ret.second;
+//     // EMatrix CP = diag_ret.first.first;
+//     // EMatrix PdC = diag_ret.first.second;
+//     // EMatrix PdCCP = PdC * CP;
 
-    vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
-    for (int i = 0; i < N_T; ++i)
-        E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
+//     // vector<EDMatrix, aligned_allocator<EDMatrix>> E(N_T);
+//     // for (int i = 0; i < N_T; ++i)
+//     //     E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * epsilon[i]).matrix().asDiagonal();
+
+//     // vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
+//     // it[0] = PdC * psi_i;
+//     // for (int i = 1; i < N_T; ++i)
+//     //     it[i] = PdCCP * (E[i - 1] * it[i - 1]);
+//     // it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
+
+//     // OArr samples{};
+//     // for (int i = 0; i < N_TO; ++i)
+//     //     for (int j = 0; j < DIM; ++j)
+//     //         samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
+//     // return samples;
+// }
+
+OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
+
+    vector<EMatrix, aligned_allocator<EMatrix>> Hs(N_T);
+    for (int i = 0; i < N_T; ++i) {
+        Hs[i] = H0D.asDiagonal();
+        for (int j = 0; j < N_FIELDS; ++j)
+            Hs[i] += fields[j][i] * dipoles[j];
+    }
 
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
-    it[0] = PdC * psi_i;
-    for (int i = 1; i < N_T; ++i)
-        it[i] = PdCCP * (E[i - 1] * it[i - 1]);
-    it[N_T] = CP * (E[N_T - 1] * it[N_T - 1]);
+    it[0] = psi_i;
+    for (int i = 1; i <= N_T; ++i)
+        it[i] = (-1.i * Hs[i-1] * DELTA_T).exp() * it[i - 1];
 
     OArr samples{};
     for (int i = 0; i < N_TO; ++i)
@@ -270,32 +392,7 @@ OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, 
     return samples;
 }
 
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i) {
-    // auto diag_ret = diag_vec(mu, C);
-    // EVector lambda = diag_ret.second;
-    // EMatrix CP = diag_ret.first.first;
-    // EMatrix PdC = diag_ret.first.second;
-    // EMatrix PdCCP = PdC * CP;
-    EDMatrix CC = C.toDenseMatrix().diagonal().array().pow(2).matrix().asDiagonal();
-
-    vector<EMatrix, aligned_allocator<EMatrix>> Ex(N_T);
-    for (int i = 0; i < N_T; ++i)
-        Ex[i] = (1i * DELTA_T / HBAR * mu * epsilon[i]).exp();
-
-    vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
-    it[0] = C * psi_i;
-    for (int i = 1; i < N_T; ++i)
-        it[i] = CC * (Ex[i - 1] * it[i - 1]);
-    it[N_T] = C * (Ex[N_T - 1] * it[N_T - 1]);
-
-    OArr samples{};
-    for (int i = 0; i < N_TO; ++i)
-        for (int j = 0; j < DIM; ++j)
-            samples[i * DIM + j] = it[(i + 1) * N_T / N_TO][j];
-    return samples;
-}
-
-vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers) {
+vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers) {
     cout << time(nullptr) << endl;
     int ord = ORD;
     vector<OArr> order_results(ord);
@@ -304,17 +401,20 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
     for (int s = 0; s < ord; ++s) {
         if (s % 1000 == 0)
             cout << "Doing s=" << s << endl;
-        EMatrix mu = mu_t_upper + mu_t_upper.adjoint();
-        double g = 2 * M_PI * s / ord;
+        double g = 2 * MY_PI * s / ord;
         EMatrix encoding = encoding_integers;
         for (Complex& d : encoding.reshaped())
             d = polar(1.l, d.real() * g);
-        EMatrix encoded = (mu.array() * encoding.array());
-        if (hermitian)
-            order_results[s] = evolve_initial_hermitian(epsilon, encoded, psi_i);
-        else
-            order_results[s] = evolve_initial_nonhermitian(epsilon, encoded, psi_i);
+        DipoleSet encoded;
+        for (int i = 0; i < N_FIELDS; ++i)
+            encoded[i] = ((dipoles_upper[i] + dipoles_upper[i].adjoint()).array() * encoding.array()).matrix();
+        // if (hermitian)
+        //     order_results[s] = evolve_initial_hermitian(fields, encoded, psi_i);
+        // else
+        order_results[s] = evolve_initial_nonhermitian(fields, encoded, psi_i);
     }
+    if (hermitian && !hermitian)
+        cout << "This print exists to remove an unused variable warning.\n";
     cout << time(nullptr) << endl;
 
     vector<CArray> ffts;
@@ -326,19 +426,22 @@ vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& 
         }
         fft(tfft);
         tfft /= tfft.size();
-        cout << "\nFFT for 1 to " << i + 1 << ':' << endl;
+        cout << "\nFFT for 1 to " << i + 1 << ":\n";
         // for (auto& d : tfft)
         //     cout << abs(d) << ' ';
         for (int k = 0; k < ord; ++k) {
             if (abs(tfft[k]) > 0.01)
-                cout << k << ": " << abs(tfft[k]) << endl;
+                cout << k << ": " << abs(tfft[k]) << '\n';
         }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << endl;
+        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << '\n';
         ffts.push_back(tfft);
     }
     double sum_of_probs = 0;
     for (CArray& fft : ffts)
         sum_of_probs += norm(fft.sum());
+    cout << "\nFinal state when unmodulated: ";
+    for (const Complex& c : order_results[0])
+        cout << c << ' ';
     cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs << endl;
 
     return ffts;
@@ -360,48 +463,28 @@ pair<int, int> calc_loc(int u_i) { // I could binary search this but I'm too laz
     throw runtime_error("calc_loc failed");
 }
 
-/*
-vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, const EMatrix& PdC,
-                            const EVector& lambda, const EVector& psi_i, const array<ECovector, DIM>& anal_pop) {
-    vector<EMatrix, aligned_allocator<EMatrix>> E(N_T);
-    for (int i = 0; i < N_T; ++i)
-        E[i] = exp(1i * DELTA_T / HBAR * lambda.array() * eps_inter[i]).matrix().asDiagonal();
+pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i) {
+
+    vector<EMatrix, aligned_allocator<EMatrix>> Hs(N_T);
+    for (int i = 0; i < N_T; ++i) {
+        Hs[i] = H0D.asDiagonal();
+        for (int j = 0; j < N_FIELDS; ++j)
+            Hs[i] += fields[j][i] * dipoles[j];
+    }
 
     vector<EVector, aligned_allocator<EVector>> it(N_T + 1);
     it[0] = psi_i;
     for (int i = 1; i <= N_T; ++i)
-        it[i] = CP * (E[i - 1] * (PdC * it[i - 1]));
+        it[i] = (-1.i * Hs[i-1] * DELTA_T).exp() * it[i - 1];
 
-    vector<DArr> pops(N_T + 1);
-    for (int i = 0; i <= N_T; ++i)
-        for (int o = 0; o < DIM; ++o)
-            pops[i][o] = (anal_pop[o] * it[i]).squaredNorm();
-    return pops;
-}
-*/
-
-vector<double> get_field(const FGenome& epsilon) {
-    // throw runtime_error("Not implemented");
-    array<double, L> omega;
-
-    for (int l = 1, c = 0; l < DIM; ++l)
-        for (int m = 0; m < l; ++m)
-            omega[c++] = (H0D(l) - H0D(m)).real() / HBAR;
-
-    vector<double> eps_inter(N_T);
-    for (int i = 0; i < N_T; ++i) {
-        eps_inter[i] = 0;
-        double t_i = (i + 0.5) * DELTA_T;
-        int c = 0;
-        for (int l = 1; l < DIM; ++l) {
-            for (int m = 0; m < l; ++m) {
-                eps_inter[i] += epsilon[c].first * sin(omega[c] * t_i + epsilon[c].second);
-                ++c;
-            }
-        }
-        eps_inter[i] *= envelope_funct(t_i);
+    vector<DArr> samples;
+    for (EVector& iv : it) {
+        DArr a;
+        for (int i = 0; i < DIM; ++i)
+            a[i] = norm(iv(i));
+        samples.push_back(a);
     }
-    return eps_inter;
+    return {samples, it[N_T]};
 }
 
 template <class T, class F> void print_vec(vector<vector<T>> vec, ofstream& outfile, F lambda) {

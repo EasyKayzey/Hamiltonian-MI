@@ -18,6 +18,7 @@
 #include "Eigen/Core"
 #include "Eigen/Eigenvalues"
 #include "Eigen/LU"
+#include "unsupported/Eigen/KroneckerProduct"
 #include "unsupported/Eigen/MatrixFunctions"
 #include "omp.h"
 
@@ -41,6 +42,11 @@ const double HBAR = 1;
 const int N_TO = 1;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
+const int N_FIELDS = 1;
+const double HEADER_TIME = 10000;
+const double HEADER_NTD = 500;
+const int TIME_POINT_SCALE = 1;
+const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
 
 #define USE_LONG_DOUBLE false
 #ifdef USE_LONG_DOUBLE
@@ -57,7 +63,10 @@ typedef Matrix<Complex, DIM, 1> EVector;
 typedef Matrix<Complex, 1, DIM> ECovector;
 typedef Matrix<Complex, Dynamic, 1> TVector;
 typedef Matrix<double, Dynamic, 1> RTVector;
-typedef array<pair<double, double>, L> FGenome;
+
+typedef Matrix<Complex, 2, 2> EMatrix2;
+typedef array<vector<double>, N_FIELDS> FieldSet;
+typedef array<EMatrix, N_FIELDS> DipoleSet;
 typedef valarray<Complex> CArray;
 typedef mt19937 rng;
 
@@ -70,19 +79,16 @@ EMatrix to_full_matrix_antihermitian(EMatrix upper);
 
 pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix& C);
 
-OArr evolve_initial_hermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
-OArr evolve_initial_nonhermitian(const vector<double>& epsilon, const EMatrix& mu, const EVector& psi_i);
+// OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
+OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 
-vector<CArray> run_order_analysis(const vector<double>& epsilon, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);
+vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);
 
 Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 
 pair<int, int> calc_loc(int u_i);
 
-// vector<DArr> gen_pop_graphs(const vector<double>& eps_inter, const EMatrix& CP, const EMatrix& PdC,
-//                            const EVector& lambda, const EVector& psi_i, const array<ECovector, DIM>& anal_pop);
-
-vector<double> get_field(const FGenome& epsilon);
+pair<vector<DArr>, EVector> gen_pop_graphs(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 
 void ptime();
 
@@ -92,6 +98,10 @@ template <class T, class F, size_t N> void print_arr(vector<array<T, N>> vec, of
 inline double normalize(double rand, double min, double max) {
     return rand * (max - min) + min;
 }
+
+// inline EMatrix kroneckerProduct3(const EMatrix2& A, const EMatrix2& B, const EMatrix2& C) {
+// 	return kroneckerProduct(A, kroneckerProduct(B, C).eval()).eval();
+// }
 
 // Here's a hash function for arrays:
 template<typename T, size_t N>
