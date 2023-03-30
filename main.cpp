@@ -7,6 +7,7 @@ int ORD = 0;
 int BASE = 7;
 int main_start_time;
 double field_scale_factor = 1;
+bool use_t_arr = true;
 
 DipoleSet dipoles_upper;
 EVector H0D;
@@ -231,8 +232,8 @@ int main(int argc, char** argv) {
             throw runtime_error("ORD not set...");
     }
 
-    cout << "Running analysis..." << endl;
-    vector<CArray> anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
+    cout << "Running end analysis..." << endl;
+    vector<CArray> anal_res_end = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
     for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
@@ -242,12 +243,13 @@ int main(int argc, char** argv) {
     ofstream outfile(string(path) + "HMI_" + to_string(main_start_time) + "_" + ffn.substr(ffn.find_last_of("/\\") + 1) 
                      + (message == "#" || message.empty() ? "" : "_" + message) + ".txt");
 
-    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, TIME_POINT_SCALE, N_FIELDS, ORD, BASE, 10 * cur_scheme + cur_type};
-    double out_doubles[] = {T, HBAR, field_scale_factor};
+    int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, TIME_POINT_SCALE, N_FIELDS, ORD, BASE, 
+                      cur_scheme, cur_type, (use_t_arr ? N_T : 0), 0,0,0,0};
+    double out_doubles[] = {T, HBAR, field_scale_factor, 0,0,0,0};
 
     if (message.empty())
         message = "#";
-    outfile << "HMR1 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
+    outfile << "HMR2 " << 1 << ' ' << message << ' ' << time(nullptr) - main_start_time << endl;
     for (int o : out_ints)
         outfile << ' ' << o;
     outfile << endl;
@@ -285,19 +287,40 @@ int main(int argc, char** argv) {
 
     outfile << encoding_integers.real() << endl;
 
-    for (CArray& arr : anal_res) {
-        for (Complex d : arr)
-            outfile << d.real() << ' ';
-        outfile << endl;
-        for (Complex d : arr)
-            outfile << d.imag() << ' ';
-        outfile << endl;
-    }   
+    if (use_t_arr) {
+        cout << "Running time analysis..." << endl;
+        int N_T_back = N_T;
+        for (int i = 0; i < N_T_back; ++i) {
+            outfile << i << endl;
+            cout << i << endl;
+            N_T = i + 1;
+            auto anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
+            for (CArray& arr : anal_res) {
+                for (Complex d : arr)
+                    outfile << d.real() << ' ';
+                outfile << endl;
+                for (Complex d : arr)
+                    outfile << d.imag() << ' ';
+                outfile << endl;
+            }   
+        }
+        N_T = N_T_back;
+    } else {
+        for (CArray& arr : anal_res_end) {
+            for (Complex d : arr)
+                outfile << d.real() << ' ';
+            outfile << endl;
+            for (Complex d : arr)
+                outfile << d.imag() << ' ';
+            outfile << endl;
+        }   
+    }
 
     if (!outfile.good())
         cerr << "Writing failed." << endl;
 
     outfile.close();
+    cout << "Finished writing." << endl;
 
 #ifdef USE_GOTO
     message = message_backup;
