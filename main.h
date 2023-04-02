@@ -36,13 +36,13 @@
 using namespace std;
 using namespace Eigen;
 
-const int DIM = 3;
+const int DIM = 2;
 const int L = (DIM * (DIM - 1)) / 2;
 const double HBAR = 1;
 const int N_TO = 1;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
-const int N_FIELDS = 1;
+const int N_FIELDS = 2;
 const int TIME_POINT_SCALE = 1;
 const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
 

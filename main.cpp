@@ -33,11 +33,30 @@ int main(int argc, char** argv) {
     }
     string message_backup = message;
 
-    H0D << 0,   0.0082,  .016;
+    EMatrix2 I2 = EMatrix2::Identity();
+    EMatrix2 Sx, Sy, Sz;
+    Sx << 0,   1,
+          1,   0;
+    Sy << 0, -1i,
+          1i,  0;
+    Sz << 1,   0,
+          0,  -1;
+    Sx /= 2, Sy /= 2, Sz /= 2;
 
-    dipoles_upper[0] <<  0,   0.061,  -.013,
-                       0,   0,  .083,
-                       0,  0,  0;
+    // H0D = (omega_1 * kroneckerProduct(Sz, I2).eval() + omega_2 * kroneckerProduct(I2, Sz).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
+    // dipoles_upper[0] = (kroneckerProduct(Sx, I2) + kroneckerProduct(I2, Sx)).triangularView<Eigen::Upper>();
+    // dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
+
+    double omega_1 = 1;
+    H0D = (omega_1 * 2 * Sz).diagonal();
+    dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
+    dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
+
+    // H0D << 0,   0.0082,  .016;
+
+    // dipoles_upper[0] <<  0,   0.061,  -.013,
+    //                    0,   0,  .083,
+    //                    0,  0,  0;
 
 
     start_label:
