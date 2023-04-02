@@ -9,16 +9,15 @@ int main_start_time;
 double field_scale_factor = 1;
 bool use_t_arr = true;
 
+time_t now = 0;
 DipoleSet dipoles_upper;
 EVector H0D;
 // EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-#define USE_GOTO
 #define ASK_T_SCALE
 int main(int argc, char** argv) {
-    { // this will only work until 2038 so be careful
-        time_t now;
+    if (now == 0) { // this will only work until 2038 so be careful
         main_start_time = time(&now);
         assert(now == main_start_time);
         ptime();
@@ -58,8 +57,6 @@ int main(int argc, char** argv) {
     //                    0,   0,  .083,
     //                    0,  0,  0;
 
-
-    start_label:
 
     FieldSet fields{};
     // string ffn = string(argv[1]);
@@ -160,12 +157,7 @@ int main(int argc, char** argv) {
             }
         } else {
             cout << "Reading fields failed..." << endl;
-#ifdef USE_GOTO
-            message = message_backup;
-            goto start_label;
-#else
-            exit(0);
-#endif
+            return main(argc, argv);
         }
     }
 
@@ -327,11 +319,8 @@ int main(int argc, char** argv) {
     outfile.close();
     cout << "Finished writing." << endl;
 
-#ifdef USE_GOTO
     message = message_backup;
-    goto start_label; // Yes, this is horrible. Yes, I know I should use a loop, or run the program multiple times, or *anything* else. 
-    // But right now, I just want to have main_start_time stay the same without all the work involved, so too bad.
-#endif
+    return main(argc, argv);
 }
 
 
