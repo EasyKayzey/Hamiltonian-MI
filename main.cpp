@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     }
     string message_backup = message;
 
-    EMatrix2 I2 = EMatrix2::Identity();
+    // EMatrix2 I2 = EMatrix2::Identity();
     EMatrix2 Sx, Sy, Sz;
     Sx << 0,   1,
           1,   0;
