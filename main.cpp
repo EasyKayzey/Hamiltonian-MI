@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     if (ffn.empty() || ffn == "#")
         throw runtime_error("Need field file name!");
 
-    ffn = "fields/gaurav_algo_fields/" + ffn;
+    ffn = "fields/gaf-2/" + ffn;
 
     string init_state_str = "";
     int init_state;
