@@ -49,8 +49,8 @@ int main(int argc, char** argv) {
     string ffn = "";
     cout << "Field file name?" << endl;
     cin >> ffn;
-    if (ffn.empty() || ffn == "n")
-        ffn = "field_nmr";
+    if (ffn.empty() || ffn == "#")
+        throw runtime_error("Need field file name!");
 
     ffn = "fields/gaurav_algo_fields/" + ffn;
 
