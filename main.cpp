@@ -118,9 +118,13 @@ int main(int argc, char** argv) {
                 double d;
                 int n_fields, n_skip;
                 string s_tmp;
+
                 getline(field_file, s_tmp);
+                if (s_tmp[s_tmp.length() - 1] == '\r')
+                    s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
                 if (s_tmp != "TIME N_T N_FIELDS SKIP")
                     throw runtime_error("Field file header " + s_tmp + " incorrect.");
+                
                 field_file >> T;
                 field_file >> N_T;
                 field_file >> n_fields;
@@ -129,7 +133,10 @@ int main(int argc, char** argv) {
                                          + " does not match header " + to_string(N_FIELDS) + ".");
                 field_file >> n_skip;
                 cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
+                
                 getline(field_file, s_tmp);
+                if (s_tmp[s_tmp.length() - 1] == '\r')
+                    s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
                 if (s_tmp != "FIELDS")
                     throw runtime_error("Field file line 3 " + s_tmp + " incorrect.");
 
