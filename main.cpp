@@ -7,7 +7,7 @@ int ORD = 0, BASE = 7;
 int time_scale = 1;
 int main_start_time;
 double field_scale_factor = 1;
-bool use_t_arr = true;
+bool use_t_arr = false;
 
 time_t now = 0;
 DipoleSet dipoles_upper;
