@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     // dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
 
     double omega_1 = 1;
-    H0D = (omega_1 * 2 * Sz).diagonal();
+    H0D = (-1 * omega_1 * 2 * Sz).diagonal();
     dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
     dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
 
@@ -133,6 +133,10 @@ int main(int argc, char** argv) {
                                          + " does not match header " + to_string(N_FIELDS) + ".");
                 field_file >> n_skip;
                 cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
+                if (time_scale != 1) {
+                    N_T = N_T * time_scale;
+                    cout << "With time scale " << time_scale << " applied, N_T=" << N_T << endl;
+                }
 
                 getline(field_file, s_tmp); // needed to get to end of line 2
                 getline(field_file, s_tmp);
@@ -141,8 +145,8 @@ int main(int argc, char** argv) {
                 if (s_tmp != "FIELDS")
                     throw runtime_error("Field file line 3 " + s_tmp + " incorrect.");
 
-                fill(fields.begin(), fields.end(), vector<double>(N_T * time_scale));
-                for (int i = 0; i < N_T; ++i) {
+                fill(fields.begin(), fields.end(), vector<double>(N_T));
+                for (int i = 0; i < N_T / time_scale; ++i) {
                     for (int k = 0; k < n_skip; ++k)
                         field_file >> d;
                     for (int j = 0; j < N_FIELDS; ++j) {
