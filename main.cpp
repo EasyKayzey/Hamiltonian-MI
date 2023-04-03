@@ -8,6 +8,7 @@ int time_scale = 1;
 int main_start_time;
 double field_scale_factor = 1;
 bool use_t_arr = false;
+bool ask_t_scale = true;
 
 time_t now = 0;
 DipoleSet dipoles_upper;
@@ -15,7 +16,6 @@ EVector H0D;
 // EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
-#define ASK_T_SCALE
 int main(int argc, char** argv) {
     if (now == 0) {
         main_start_time = time(&now);  // this will only work until 2038 so be careful
@@ -79,17 +79,17 @@ int main(int argc, char** argv) {
         init_state = 0;
     }
 
-#ifdef ASK_T_SCALE
-    string t_scale_str = "";
-    cout << "Time point scale?" << endl;
-    cin >> t_scale_str;
-    if (!t_scale_str.empty() && t_scale_str != "1") {
-        time_scale = stoi(t_scale_str);
-        message += (message.length() == 0 ? "" : "_") + t_scale_str;
-    } else {
-        time_scale = 1;
+    if (ask_t_scale) {
+        string t_scale_str = "";
+        cout << "Time point scale?" << endl;
+        cin >> t_scale_str;
+        if (!t_scale_str.empty() && t_scale_str != "1") {
+            time_scale = stoi(t_scale_str);
+            message += (message.length() == 0 ? "" : "_") + t_scale_str;
+        } else {
+            time_scale = 1;
+        }
     }
-#endif
 
     string message_append = "";
     cout << "Message append? (can use # for no)" << endl;
