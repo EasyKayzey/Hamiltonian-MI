@@ -17,8 +17,8 @@ array<ECovector, DIM> anal_pop;
 
 #define ASK_T_SCALE
 int main(int argc, char** argv) {
-    if (now == 0) { // this will only work until 2038 so be careful
-        main_start_time = time(&now);
+    if (now == 0) {
+        main_start_time = time(&now);  // this will only work until 2038 so be careful
         assert(now == main_start_time);
         ptime();
     }
