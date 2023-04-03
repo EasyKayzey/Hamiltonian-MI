@@ -8,7 +8,7 @@ int time_scale = 1;
 int main_start_time;
 double field_scale_factor = 1;
 bool use_t_arr = false;
-bool ask_t_scale = true;
+bool ask_t_scale = false;
 
 time_t now = 0;
 DipoleSet dipoles_upper;
@@ -21,6 +21,24 @@ int main(int argc, char** argv) {
         main_start_time = time(&now);  // this will only work until 2038 so be careful
         assert(now == main_start_time);
         ptime();
+
+        char c_tmp;
+        cout << "If T arrays are desired, enter \"T\" at the prompt." << endl;
+        cin >> c_tmp;
+        if (c_tmp == 'T' || c_tmp == 't') {
+            use_t_arr = true;
+            cout << "Using T arrays." << endl;
+        } else {
+            use_t_arr = false;
+        }
+        
+        cout << "If you'd like to be prompted for time point scale, enter \"T\" at the prompt." << endl;
+        cin >> c_tmp;
+        if (c_tmp == 'T' || c_tmp == 't') {
+            ask_t_scale = true;
+        } else {
+            ask_t_scale = false;
+        }
     }
 
     string message = "";
