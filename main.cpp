@@ -133,7 +133,8 @@ int main(int argc, char** argv) {
                                          + " does not match header " + to_string(N_FIELDS) + ".");
                 field_file >> n_skip;
                 cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
-                
+
+                getline(field_file, s_tmp); // needed to get to end of line 2
                 getline(field_file, s_tmp);
                 if (s_tmp[s_tmp.length() - 1] == '\r')
                     s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
