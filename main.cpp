@@ -326,9 +326,10 @@ int main(int argc, char** argv) {
 
     if (!outfile.good())
         cerr << "Writing failed." << endl;
-
-    outfile.close();
-    cout << "Finished writing." << endl;
+    else {
+        outfile.close();
+        cout << "Finished writing." << endl;
+    }
 
     message = message_backup;
     return main(argc, argv);
