@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
         }
         N_T = N_T_back;
     } else {
-        outfile << "End analysis:" << endl;
+        outfile << N_T << endl;
         for (CArray& arr : anal_res_end) {
             for (Complex d : arr)
                 outfile << d.real() << ' ';
