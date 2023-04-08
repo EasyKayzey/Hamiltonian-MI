@@ -6,7 +6,7 @@ int N_T;
 int ORD = 0, BASE = 7;
 int time_scale = 1;
 int main_start_time;
-double field_scale_factor = 1;
+double amp_scale = 1;
 bool use_t_arr = false;
 bool ask_t_scale = false;
 
@@ -270,7 +270,7 @@ int main(int argc, char** argv) {
 
     int out_ints[] = {DIM, N_T, main_start_time, L, N_H, N_TO, time_scale, N_FIELDS, ORD, BASE, 
                       cur_scheme, cur_type, (use_t_arr ? N_T : 1), 0,0,0,0};
-    double out_doubles[] = {T, HBAR, field_scale_factor, 0,0,0,0};
+    double out_doubles[] = {T, HBAR, amp_scale, 0,0,0,0};
 
     if (message.empty())
         message = "#";
