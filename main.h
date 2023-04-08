@@ -79,7 +79,8 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
 // OArr evolve_initial_hermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipoles, const EVector& psi_i);
 
-vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers);
+vector<CArray> run_order_analysis(bool prints, const FieldSet& fields, const EVector& psi_i, bool hermitian,
+                                  const EMatrix& encoding_integers);
 
 Complex get_only_element(Matrix<Complex, -1, -1> scalar);
 

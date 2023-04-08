@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
     }
 
     cout << "Running end analysis..." << endl;
-    vector<CArray> anal_res_end = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
+    vector<CArray> anal_res_end = run_order_analysis(true, fields, psi_i, cur_type == hermitian, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
     for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
@@ -313,13 +313,14 @@ int main(int argc, char** argv) {
     outfile << encoding_integers.real() << endl;
 
     if (use_t_arr) {
-        cout << "Running time analysis..." << endl;
+        cout << "Running time analysis on" << N_T << " points..." << endl;
         int N_T_back = N_T;
         for (int i = 0; i < N_T_back; ++i) {
             outfile << i << endl;
-            cout << i << endl;
+            if (N_T_back < 100 || i % (N_T_back / 100) == 0)
+                cout << "Running time point " << i << endl;
             N_T = i + 1;
-            auto anal_res = run_order_analysis(fields, psi_i, cur_type == hermitian, encoding_integers);
+            auto anal_res = run_order_analysis(false, fields, psi_i, cur_type == hermitian, encoding_integers);
             for (CArray& arr : anal_res) {
                 for (Complex d : arr)
                     outfile << d.real() << ' ';
@@ -329,6 +330,7 @@ int main(int argc, char** argv) {
                 outfile << endl;
             }   
         }
+        cout << "Finished time analysis." << endl;
         N_T = N_T_back;
     } else {
         outfile << N_T << endl;
@@ -439,14 +441,16 @@ OArr evolve_initial_nonhermitian(const FieldSet& fields, const DipoleSet& dipole
     return samples;
 }
 
-vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers) {
-    cout << time(nullptr) << endl;
+vector<CArray> run_order_analysis(bool prints, const FieldSet& fields, const EVector& psi_i, bool hermitian, const EMatrix& encoding_integers) {
+    // cout << time(nullptr) << endl;
     int ord = ORD;
     vector<OArr> order_results(ord);
-    cout << "Running analysis with ord=" << ord << endl;
+    if (prints)
+        cout << "Running analysis with ord=" << ord << endl;
+
 #pragma omp parallel for default(shared)
     for (int s = 0; s < ord; ++s) {
-        if (s % 1000 == 0)
+        if (prints && s % 1000 == 0)
             cout << "Doing s=" << s << endl;
         double g = 2 * MY_PI * s / ord;
         EMatrix encoding = encoding_integers;
@@ -462,7 +466,7 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
     }
     if (hermitian && !hermitian)
         cout << "This print exists to remove an unused variable warning.\n";
-    cout << time(nullptr) << endl;
+    // cout << time(nullptr) << endl;
 
     vector<CArray> ffts;
     for (int i = 0; i < DIM; ++i) {
@@ -473,23 +477,30 @@ vector<CArray> run_order_analysis(const FieldSet& fields, const EVector& psi_i, 
         }
         fft(tfft);
         tfft /= tfft.size();
-        cout << "\nFFT for 1 to " << i + 1 << ":\n";
-        // for (auto& d : tfft)
-        //     cout << abs(d) << ' ';
-        for (int k = 0; k < ord; ++k) {
-            if (abs(tfft[k]) > 0.01)
-                cout << k << ": " << abs(tfft[k]) << '\n';
+        
+        if (prints) {
+            cout << "\nFFT for 1 to " << i + 1 << ":\n";
+            // for (auto& d : tfft)
+            //     cout << abs(d) << ' ';
+            for (int k = 0; k < ord; ++k) {
+                if (abs(tfft[k]) > 0.01)
+                    cout << k << ": " << abs(tfft[k]) << '\n';
+            }
+            cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << '\n';
         }
-        cout << endl << "Sum of values: " << tfft.sum() << "; magnitude " << abs(tfft.sum()) << "; prob " << norm(tfft.sum()) << '\n';
+
         ffts.push_back(tfft);
     }
     double sum_of_probs = 0;
     for (CArray& fft : ffts)
         sum_of_probs += norm(fft.sum());
-    cout << "\nFinal state when unmodulated: ";
-    for (const Complex& c : order_results[0])
-        cout << c << ' ';
-    cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs << endl;
+
+    if (prints) {
+        cout << "\nFinal state when unmodulated: ";
+        for (const Complex& c : order_results[0])
+            cout << c << ' ';
+        cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs << endl;
+    }
 
     return ffts;
 }
