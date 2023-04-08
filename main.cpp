@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
                 if (upper(i, j) != upper(j, i))
                     upper_triangle_ones(i, j) = 1.;
 
- EMatrix encoding_integers;
+    EMatrix encoding_integers;
     enum enc_scheme { other, order, partial, full };
     enum enc_type { hermitian, antihermitian, nonhermitian };
     const enc_scheme cur_scheme = partial;
