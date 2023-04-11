@@ -499,7 +499,11 @@ vector<CArray> run_order_analysis(bool prints, const FieldSet& fields, const EVe
         cout << "\nFinal state when unmodulated: ";
         for (const Complex& c : order_results[0])
             cout << c << ' ';
-        cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs << endl;
+        // auto default_prec = cout.precision();
+        // cout << std::setprecision(8);
+        cout << "\nSum of calculated sum-of-fftval probablities is " << sum_of_probs;
+        cout << "; error is " << 1 - sum_of_probs << '\n';
+        // cout << std::setprecision(default_prec);
     }
 
     return ffts;
