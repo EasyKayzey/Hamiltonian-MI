@@ -47,12 +47,12 @@ const double MY_PI = 3.141592653589793238462643383279502884197169399375105820974
 
 #define USE_LONG_DOUBLE false
 #ifdef USE_LONG_DOUBLE
-typedef complex<long double> Complex;
-typedef array<long double, DIM> DArr;
+typedef long double DOUBLE_TYPE;
 #else
-typedef complex<double> Complex;
-typedef array<double, DIM> DArr;
+typedef double DOUBLE_TYPE;
 #endif
+typedef complex<DOUBLE_TYPE> Complex;
+typedef array<DOUBLE_TYPE, DIM> DArr;
 typedef array<Complex, N_OBS> OArr;
 typedef Matrix<Complex, DIM, DIM> EMatrix;
 typedef DiagonalMatrix<Complex, DIM> EDMatrix;

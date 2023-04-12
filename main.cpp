@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
     }
 
     if (cur_scheme != other) {
-        long double max_ord = 0;
+        DOUBLE_TYPE max_ord = 0;
         for (Complex& c : encoding_integers.reshaped()) {
             if (c.real() != 0) {
                 max_ord = max(max_ord, abs(c.real()));
@@ -455,7 +455,7 @@ vector<CArray> run_order_analysis(bool prints, const FieldSet& fields, const EVe
         double g = 2 * MY_PI * s / ord;
         EMatrix encoding = encoding_integers;
         for (Complex& d : encoding.reshaped())
-            d = polar(1.l, d.real() * g);
+            d = polar((DOUBLE_TYPE) 1, d.real() * g);
         DipoleSet encoded;
         for (int i = 0; i < N_FIELDS; ++i)
             encoded[i] = ((dipoles_upper[i] + dipoles_upper[i].adjoint()).array() * encoding.array()).matrix();
