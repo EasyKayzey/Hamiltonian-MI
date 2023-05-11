@@ -69,6 +69,8 @@ typedef mt19937 rng;
 
 int main(int argc, char** argv);
 
+int autorun(int argc, char** argv);
+
 double envelope_funct(double t);
 
 EMatrix to_full_matrix_hermitian(EMatrix upper);

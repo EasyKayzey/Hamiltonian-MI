@@ -9,6 +9,11 @@ int main_start_time;
 double amp_scale = 1;
 bool use_t_arr = false;
 bool ask_t_scale = false;
+bool rerun = true;
+
+int autostate = -1;
+string autofield = "";
+string automessage = "";
 
 time_t now = 0;
 DipoleSet dipoles_upper;
@@ -22,22 +27,30 @@ int main(int argc, char** argv) {
         assert(now == main_start_time);
         ptime();
 
+        cout << "Initial prompts: tarr, tscale, allstates" << endl;
+
         char c_tmp;
-        cout << "If T arrays are desired, enter \"T\" at the prompt." << endl;
+        cout << "If T arrays are desired, enter \"y\" at the prompt." << endl;
         cin >> c_tmp;
-        if (c_tmp == 'T' || c_tmp == 't') {
+        if (c_tmp == 'Y' || c_tmp == 'y') {
             use_t_arr = true;
             cout << "Using T arrays." << endl;
         } else {
             use_t_arr = false;
         }
         
-        cout << "If you'd like to be prompted for time point scale, enter \"T\" at the prompt." << endl;
+        cout << "If you'd like to be prompted for time point scale, enter \"y\" at the prompt." << endl;
         cin >> c_tmp;
-        if (c_tmp == 'T' || c_tmp == 't') {
+        if (c_tmp == 'Y' || c_tmp == 'y') {
             ask_t_scale = true;
         } else {
             ask_t_scale = false;
+        }
+
+        cout << "If you'd like to autorun all initial states, enter \"y\" at the prompt." << endl;
+        cin >> c_tmp;
+        if (c_tmp == 'Y' || c_tmp == 'y') {
+            return autorun(argc, argv);
         }
     }
 
@@ -78,23 +91,30 @@ int main(int argc, char** argv) {
 
     FieldSet fields{};
     // string ffn = string(argv[1]);
-    string ffn = "";
-    cout << "Field file name?" << endl;
-    cin >> ffn;
-    if (ffn.empty() || ffn == "#")
-        throw runtime_error("Need field file name!");
+    string ffn = autofield;
+    if (autofield.empty()) {
+        cout << "Field file name?" << endl;
+        cin >> ffn;
+        if (ffn.empty() || ffn == "#")
+            throw runtime_error("Need field file name!");
+    }
 
     ffn = "fields/gaf-2/" + ffn;
 
     string init_state_str = "";
     int init_state;
-    cout << "Initial state index?" << endl;
-    cin >> init_state_str;
-    if (!init_state_str.empty() && init_state_str != "0") {
-        init_state = stoi(init_state_str);
-        message += (message.length() == 0 ? "" : "_") + init_state_str;
+    if (autostate == -1) {
+        cout << "Initial state index?" << endl;
+        cin >> init_state_str;
+        if (!init_state_str.empty() && init_state_str != "0") {
+            init_state = stoi(init_state_str);
+            message += (message.length() == 0 ? "" : "_") + init_state_str;
+        } else {
+            init_state = 0;
+        }
     } else {
-        init_state = 0;
+        init_state = autostate;
+        message += (message.length() == 0 ? "AS" : "_AS") + to_string(init_state);
     }
 
     if (ask_t_scale) {
@@ -109,12 +129,13 @@ int main(int argc, char** argv) {
         }
     }
 
-    string message_append = "";
-    cout << "Message append? (can use # for no)" << endl;
-    cin >> message_append;
+    string message_append = automessage;
+    if (message_append.empty()) {
+        cout << "Message append? (can use # for no)" << endl;
+        cin >> message_append;
+    }
     if (message_append.length() != 0 && message_append != "#")
         message += (message.length() == 0 ? "" : "_") + message_append;
-
 
     EVector psi_i = EVector::Zero();
     psi_i[init_state] = 1;
@@ -352,9 +373,35 @@ int main(int argc, char** argv) {
     }
 
     message = message_backup;
-    return main(argc, argv);
+    if (rerun)
+        return main(argc, argv);
+    return 0;
 }
 
+int autorun(int argc, char** argv) {
+    bool rerunback = rerun;
+    rerun = false;
+
+    cout << "Field file name?" << endl;
+    cin >> autofield;
+    if (autofield.empty())
+        throw runtime_error("Need field file name!");
+    
+    cout << "Message append? (can use # for no)" << endl;
+    cin >> automessage;
+
+    for (int i = 0; i < DIM; ++i) {
+        autostate = i;
+        main(argc, argv);
+    }
+
+    autofield = "";
+    autostate = -1;
+    rerun = rerunback;
+    if (rerun)
+        return autorun(argc, argv);
+    return 0;
+}
 
 double envelope_funct(double t) {
     // static_assert(N_TO == 2, "The current envelope function is a double bell curve...\n");
