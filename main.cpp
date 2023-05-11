@@ -9,6 +9,7 @@ int main_start_time;
 double amp_scale = 1;
 bool use_t_arr = false;
 bool ask_t_scale = false;
+bool ask_amp_scale = false;
 bool rerun = true;
 
 int autostate = -1;
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
         assert(now == main_start_time);
         ptime();
 
-        cout << "Initial prompts: tarr, tscale, allstates" << endl;
+        cout << "Initial prompts: tarr, tscale, ascale, allstates" << endl;
 
         char c_tmp;
         cout << "If T arrays are desired, enter \"y\" at the prompt." << endl;
@@ -45,6 +46,14 @@ int main(int argc, char** argv) {
             ask_t_scale = true;
         } else {
             ask_t_scale = false;
+        }
+                
+        cout << "If you'd like to be prompted for amplitude scale, enter \"y\" at the prompt." << endl;
+        cin >> c_tmp;
+        if (c_tmp == 'Y' || c_tmp == 'y') {
+            ask_amp_scale = true;
+        } else {
+            ask_amp_scale = false;
         }
 
         cout << "If you'd like to autorun all initial states, enter \"y\" at the prompt." << endl;
@@ -128,6 +137,18 @@ int main(int argc, char** argv) {
             time_scale = 1;
         }
     }
+    
+    if (ask_amp_scale) {
+        string amp_scale_str = "";
+        cout << "Amplitude scale?" << endl;
+        cin >> amp_scale_str;
+        if (!amp_scale_str.empty() && amp_scale_str != "1") {
+            amp_scale = stoi(amp_scale_str);
+            message += (message.length() == 0 ? "" : "_") + amp_scale_str;
+        } else {
+            amp_scale = 1;
+        }
+    }
 
     string message_append = automessage;
     if (message_append.empty()) {
@@ -191,7 +212,7 @@ int main(int argc, char** argv) {
                     for (int j = 0; j < N_FIELDS; ++j) {
                         field_file >> d;
                         for (int k = 0; k < time_scale; ++k) {
-                            fields[j][i * time_scale + k] = d;
+                            fields[j][i * time_scale + k] = d * amp_scale;
                         }
                     }
                 }
