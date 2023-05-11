@@ -7,6 +7,8 @@ int ORD = 0, BASE = 7;
 int time_scale = 1;
 int main_start_time;
 double amp_scale = 1;
+bool ask_any_prompts = true;
+
 bool use_t_arr = false;
 bool ask_t_scale = false;
 bool ask_amp_scale = false;
@@ -126,29 +128,8 @@ int main(int argc, char** argv) {
         message += (message.length() == 0 ? "AS" : "_AS") + to_string(init_state);
     }
 
-    if (ask_t_scale) {
-        string t_scale_str = "";
-        cout << "Time point scale?" << endl;
-        cin >> t_scale_str;
-        if (!t_scale_str.empty() && t_scale_str != "1") {
-            time_scale = stoi(t_scale_str);
-            message += (message.length() == 0 ? "" : "_") + t_scale_str;
-        } else {
-            time_scale = 1;
-        }
-    }
-    
-    if (ask_amp_scale) {
-        string amp_scale_str = "";
-        cout << "Amplitude scale?" << endl;
-        cin >> amp_scale_str;
-        if (!amp_scale_str.empty() && amp_scale_str != "1") {
-            amp_scale = stoi(amp_scale_str);
-            message += (message.length() == 0 ? "" : "_") + amp_scale_str;
-        } else {
-            amp_scale = 1;
-        }
-    }
+    if (ask_any_prompts)
+        run_prompts(message);
 
     string message_append = automessage;
     if (message_append.empty()) {
@@ -400,16 +381,23 @@ int main(int argc, char** argv) {
 }
 
 int autorun_states(int argc, char** argv) {
-    bool rerunback = rerun;
+    bool rerunback = rerun, aapback = ask_any_prompts;
     rerun = false;
+    ask_any_prompts = false;
 
     cout << "Field file name?" << endl;
     cin >> autofield;
     if (autofield.empty())
         throw runtime_error("Need field file name!");
+
+    automessage = "";
+    run_prompts(automessage);
     
+    string automessage_append = "";
     cout << "Message append? (can use # for no)" << endl;
-    cin >> automessage;
+    cin >> automessage_append;
+    if (automessage_append.length() != 0 && automessage_append != "#")
+        automessage += (automessage.length() == 0 ? "" : "_") + automessage_append;
 
     for (int i = 0; i < DIM; ++i) {
         autostate = i;
@@ -419,9 +407,36 @@ int autorun_states(int argc, char** argv) {
     autofield = "";
     autostate = -1;
     rerun = rerunback;
+    ask_any_prompts = aapback;
     if (rerun)
         return autorun_states(argc, argv);
     return 0;
+}
+
+void run_prompts(string& message) {
+    if (ask_t_scale) {
+        string t_scale_str = "";
+        cout << "Time point scale?" << endl;
+        cin >> t_scale_str;
+        if (!t_scale_str.empty() && t_scale_str != "1") {
+            time_scale = stoi(t_scale_str);
+            message += (message.length() == 0 ? "" : "_") + t_scale_str;
+        } else {
+            time_scale = 1;
+        }
+    }
+    
+    if (ask_amp_scale) {
+        string amp_scale_str = "";
+        cout << "Amplitude scale?" << endl;
+        cin >> amp_scale_str;
+        if (!amp_scale_str.empty() && amp_scale_str != "1") {
+            amp_scale = stod(amp_scale_str);
+            message += (message.length() == 0 ? "" : "_") + amp_scale_str;
+        } else {
+            amp_scale = 1;
+        }
+    }
 }
 
 double envelope_funct(double t) {

@@ -71,6 +71,8 @@ int main(int argc, char** argv);
 
 int autorun_states(int argc, char** argv);
 
+void run_prompts(string& message);
+
 double envelope_funct(double t);
 
 EMatrix to_full_matrix_hermitian(EMatrix upper);
