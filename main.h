@@ -69,7 +69,7 @@ typedef mt19937 rng;
 
 int main(int argc, char** argv);
 
-int autorun(int argc, char** argv);
+int autorun_states(int argc, char** argv);
 
 double envelope_funct(double t);
 

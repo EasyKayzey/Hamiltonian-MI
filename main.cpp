@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         cout << "If you'd like to autorun all initial states, enter \"y\" at the prompt." << endl;
         cin >> c_tmp;
         if (c_tmp == 'Y' || c_tmp == 'y') {
-            return autorun(argc, argv);
+            return autorun_states(argc, argv);
         }
     }
 
@@ -378,7 +378,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-int autorun(int argc, char** argv) {
+int autorun_states(int argc, char** argv) {
     bool rerunback = rerun;
     rerun = false;
 
@@ -399,7 +399,7 @@ int autorun(int argc, char** argv) {
     autostate = -1;
     rerun = rerunback;
     if (rerun)
-        return autorun(argc, argv);
+        return autorun_states(argc, argv);
     return 0;
 }
 
