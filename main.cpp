@@ -104,13 +104,15 @@ int main(int argc, char** argv) {
     // string ffn = string(argv[1]);
     string ffn = autofield;
     if (autofield.empty()) {
-        cout << "Field file name?" << endl;
+        cout << "Reading fields from " << field_dir << ". Field file name?" << endl;
         cin >> ffn;
         if (ffn.empty() || ffn == "#")
             throw runtime_error("Need field file name!");
+        else if (ffn == "exit")
+            return 0;
     }
 
-    ffn = "fields/gaf-2/" + ffn;
+    ffn = field_dir + ffn;
 
     string init_state_str = "";
     int init_state;
@@ -389,6 +391,13 @@ int autorun_states(int argc, char** argv) {
     cin >> autofield;
     if (autofield.empty())
         throw runtime_error("Need field file name!");
+
+    cout << "Reading fields from " << field_dir << ". Field file name?" << endl;
+    cin >> autofield;
+    if (autofield.empty() || autofield == "#")
+        throw runtime_error("Need field file name!");
+    else if (ffn == "exit")
+        return 0;
 
     automessage = "";
     run_prompts(automessage);
