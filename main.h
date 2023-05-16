@@ -43,7 +43,6 @@ const int N_FIELDS = 2;
 const int BASE = 7;
 const string field_dir = "fields/gaf-2/";
 
-
 // Automatic constants and typedefs
 const int L = (DIM * (DIM - 1)) / 2;
 const int N_OBS = DIM * N_TO;
