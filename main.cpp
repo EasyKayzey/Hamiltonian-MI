@@ -387,11 +387,6 @@ int autorun_states(int argc, char** argv) {
     rerun = false;
     ask_any_prompts = false;
 
-    cout << "Field file name?" << endl;
-    cin >> autofield;
-    if (autofield.empty())
-        throw runtime_error("Need field file name!");
-
     cout << "Reading fields from " << field_dir << ". Field file name?" << endl;
     cin >> autofield;
     if (autofield.empty() || autofield == "#")
@@ -407,6 +402,8 @@ int autorun_states(int argc, char** argv) {
     cin >> automessage_append;
     if (automessage_append.length() != 0 && automessage_append != "#")
         automessage += (automessage.length() == 0 ? "" : "_") + automessage_append;
+    if (automessage.empty())
+        automessage = "#";
 
     for (int i = 0; i < DIM; ++i) {
         autostate = i;
