@@ -12,6 +12,7 @@ bool ask_any_prompts = true;
 bool use_t_arr = false;
 bool ask_t_scale = false;
 bool ask_amp_scale = false;
+bool print_ffts = false;
 bool rerun = true;
 
 int autostate = -1;
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
         assert(now == main_start_time);
         ptime();
 
-        cout << "Initial prompts: tarr, tscale, ascale, allstates" << endl;
+        cout << "Initial prompts: tarr, tscale, ascale, printffts, allstates" << endl;
 
         char c_tmp;
         cout << "If T arrays are desired, enter \"y\" at the prompt." << endl;
@@ -56,6 +57,14 @@ int main(int argc, char** argv) {
             ask_amp_scale = true;
         } else {
             ask_amp_scale = false;
+        }
+
+        cout << "If you'd like to print FFTs, enter \"y\" at the prompt." << endl;
+        cin >> c_tmp;
+        if (c_tmp == 'Y' || c_tmp == 'y') {
+            print_ffts = true;
+        } else {
+            print_ffts = false;
         }
 
         cout << "If you'd like to autorun all initial states, enter \"y\" at the prompt." << endl;
@@ -283,7 +292,7 @@ int main(int argc, char** argv) {
     }
 
     cout << "Running end analysis..." << endl;
-    vector<CArray> anal_res_end = run_order_analysis(true, fields, psi_i, cur_type == hermitian, encoding_integers);
+    vector<CArray> anal_res_end = run_order_analysis(print_ffts, fields, psi_i, cur_type == hermitian, encoding_integers);
 
     DipoleSet dipoles = dipoles_upper;
     for (EMatrix &dipole : dipoles) dipole = (dipole + dipole.adjoint()).eval(); 
