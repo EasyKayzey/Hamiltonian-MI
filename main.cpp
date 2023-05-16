@@ -338,7 +338,7 @@ int main(int argc, char** argv) {
     outfile << encoding_integers.real() << endl;
 
     if (use_t_arr) {
-        cout << "Running time analysis on" << N_T << " points..." << endl;
+        cout << "Running time analysis on " << N_T << " points..." << endl;
         int N_T_back = N_T;
         for (int i = 0; i < N_T_back; ++i) {
             outfile << i << endl;
