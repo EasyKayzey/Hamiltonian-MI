@@ -123,6 +123,8 @@ int autorun_states(int argc, char** argv);
 
 void run_prompts(string& message);
 
+int read_field_file(string filename, FieldSet& fields);
+
 EMatrix gen_encoding_integers();
 
 double envelope_funct(double t);

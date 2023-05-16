@@ -135,67 +135,9 @@ int main(int argc, char** argv) {
     }
 
 
-    {
-        ifstream field_file(path + ffn + ".txt");
-        if (field_file.good()) {
-            cout << "Using field from " << ffn << ".txt" << endl;
-            try {
-                double d;
-                int n_fields, n_skip;
-                string s_tmp;
-
-                getline(field_file, s_tmp);
-                if (s_tmp[s_tmp.length() - 1] == '\r')
-                    s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
-                if (s_tmp != "TIME N_T N_FIELDS SKIP")
-                    throw runtime_error("Field file header " + s_tmp + " incorrect.");
-                
-                field_file >> T;
-                field_file >> N_T;
-                field_file >> n_fields;
-                if (n_fields != N_FIELDS)
-                    throw runtime_error("Field file N_FIELDS=" + to_string(n_fields)
-                                         + " does not match header " + to_string(N_FIELDS) + ".");
-                field_file >> n_skip;
-                cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
-                if (time_scale != 1) {
-                    N_T = N_T * time_scale;
-                    cout << "With time scale " << time_scale << " applied, N_T=" << N_T << endl;
-                }
-
-                getline(field_file, s_tmp); // needed to get to end of line 2
-                getline(field_file, s_tmp);
-                if (s_tmp[s_tmp.length() - 1] == '\r')
-                    s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
-                if (s_tmp != "FIELDS")
-                    throw runtime_error("Field file line 3 " + s_tmp + " incorrect.");
-
-                fill(fields.begin(), fields.end(), vector<double>(N_T));
-                for (int i = 0; i < N_T / time_scale; ++i) {
-                    for (int k = 0; k < n_skip; ++k)
-                        field_file >> d;
-                    for (int j = 0; j < N_FIELDS; ++j) {
-                        field_file >> d;
-                        for (int k = 0; k < time_scale; ++k) {
-                            fields[j][i * time_scale + k] = d * amp_scale;
-                        }
-                    }
-                }
-                if (!field_file.eof()) {
-                    char c;
-                    while (field_file.get(c))
-                        if (!std::isspace(c))
-                            throw runtime_error("Field file too long...");
-                }
-            } catch (runtime_error& e) {
-                cout << "Reading fields failed... Error: " << e.what() << endl;
-                cerr << "Reading fields failed... Error: " << e.what() << endl;
-                exit(0);
-            }
-        } else {
-            cout << "Reading fields failed..." << endl;
-            return main(argc, argv);
-        }
+    if (read_field_file(path + ffn + ".txt", fields) == -1) {
+        cout << "Field file not found. Restarting." << endl;
+        return main(argc, argv);
     }
 
     cout << "Successfully read fields." << endl;
@@ -362,6 +304,69 @@ void run_prompts(string& message) {
         } else {
             amp_scale = 1;
         }
+    }
+}
+
+int read_field_file(string filename, FieldSet& fields) {
+    ifstream field_file(filename);
+    if (field_file.good()) {
+        cout << "Using field from " << filename << endl;
+        try {
+            double d;
+            int n_fields, n_skip;
+            string s_tmp;
+
+            getline(field_file, s_tmp);
+            if (s_tmp[s_tmp.length() - 1] == '\r')
+                s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
+            if (s_tmp != "TIME N_T N_FIELDS SKIP")
+                throw runtime_error("Field file header " + s_tmp + " incorrect.");
+            
+            field_file >> T;
+            field_file >> N_T;
+            field_file >> n_fields;
+            if (n_fields != N_FIELDS)
+                throw runtime_error("Field file N_FIELDS=" + to_string(n_fields)
+                                        + " does not match header " + to_string(N_FIELDS) + ".");
+            field_file >> n_skip;
+            cout << "Read T=" << T << ", N_T=" << N_T << ", SKIP=" << n_skip << endl;
+            if (time_scale != 1) {
+                N_T = N_T * time_scale;
+                cout << "With time scale " << time_scale << " applied, N_T=" << N_T << endl;
+            }
+
+            getline(field_file, s_tmp); // needed to get to end of line 2
+            getline(field_file, s_tmp);
+            if (s_tmp[s_tmp.length() - 1] == '\r')
+                s_tmp = s_tmp.substr(0, s_tmp.length() - 1);
+            if (s_tmp != "FIELDS")
+                throw runtime_error("Field file line 3 " + s_tmp + " incorrect.");
+
+            fill(fields.begin(), fields.end(), vector<double>(N_T));
+            for (int i = 0; i < N_T / time_scale; ++i) {
+                for (int k = 0; k < n_skip; ++k)
+                    field_file >> d;
+                for (int j = 0; j < N_FIELDS; ++j) {
+                    field_file >> d;
+                    for (int k = 0; k < time_scale; ++k) {
+                        fields[j][i * time_scale + k] = d * amp_scale;
+                    }
+                }
+            }
+            if (!field_file.eof()) {
+                char c;
+                while (field_file.get(c))
+                    if (!std::isspace(c))
+                        throw runtime_error("Field file too long...");
+            }
+            return 0;
+        } catch (runtime_error& e) {
+            cout << "Reading fields failed... Error: " << e.what() << endl;
+            cerr << "Reading fields failed... Error: " << e.what() << endl;
+            exit(0);
+        }
+    } else {
+        return -1;
     }
 }
 
