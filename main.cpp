@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
         assert(now == main_start_time);
         ptime();
 
-        cout << "Initial prompts: tarr, tscale, ascale, printffts, allstates" << endl;
+        cout << "5 initial prompts: tarr, tscale, ascale, printffts, allstates" << endl;
 
         char c_tmp;
         cout << "If T arrays are desired, enter \"y\" at the prompt." << endl;
