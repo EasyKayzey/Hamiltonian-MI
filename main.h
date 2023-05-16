@@ -36,18 +36,22 @@
 using namespace std;
 using namespace Eigen;
 
+// User constants (change me!)
 const int DIM = 2;
 const int N_TO = 1;
 const int N_FIELDS = 2;
+const int BASE = 7;
 const string field_dir = "fields/gaf-2/";
 
+
+// Automatic constants and typedefs
 const int L = (DIM * (DIM - 1)) / 2;
 const int N_OBS = DIM * N_TO;
 const int N_H = L;
 const double HBAR = 1;
 const double MY_PI = 3.14159265358979323846264338327950288419716939937510582097494459230781;
 
-#define USE_LONG_DOUBLE
+#define USE_LONG_DOUBLE // comment out to use default double (change me!)
 #ifdef USE_LONG_DOUBLE
 typedef long double DOUBLE_TYPE;
 #else
@@ -69,11 +73,57 @@ typedef array<EMatrix, N_FIELDS> DipoleSet;
 typedef valarray<Complex> CArray;
 typedef mt19937 rng;
 
+// Hamlitonian (change me!)
+DipoleSet dipoles_upper;
+EVector H0D;
+void gen_hamiltonians() {
+
+	// EMatrix2 I2 = EMatrix2::Identity();
+    EMatrix2 Sx, Sy, Sz;
+    Sx << 0,   1,
+          1,   0;
+    Sy << 0, -1i,
+          1i,  0;
+    Sz << 1,   0,
+          0,  -1;
+    Sx /= 2, Sy /= 2, Sz /= 2;
+
+    // H0D = (omega_1 * kroneckerProduct(Sz, I2).eval() + omega_2 * kroneckerProduct(I2, Sz).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
+    // dipoles_upper[0] = (kroneckerProduct(Sx, I2) + kroneckerProduct(I2, Sx)).triangularView<Eigen::Upper>();
+    // dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
+
+    double omega_1 = 1;
+    H0D = (-1 * omega_1 * 2 * Sz).diagonal();
+    dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
+    dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
+
+    // dipoles_upper[0] <<  0,   0.061,  -.013,
+    //                    0,   0,  .083,
+    //                    0,  0,  0;
+}
+
+// Encoding (change me!)
+enum enc_scheme { other, order, partial, full };
+enum enc_type { hermitian, antihermitian, nonhermitian };
+const enc_scheme cur_scheme = partial;
+const enc_type cur_type = nonhermitian;
+EMatrix get_partial_encoding_integers() {
+	EMatrix partial_encoding_integers;
+	partial_encoding_integers << 
+		0, 0, 
+		1, 0;
+	return partial_encoding_integers;
+}
+
+// Other headers and utility functions
+
 int main(int argc, char** argv);
 
 int autorun_states(int argc, char** argv);
 
 void run_prompts(string& message);
+
+EMatrix gen_encoding_integers();
 
 double envelope_funct(double t);
 

@@ -3,7 +3,7 @@
 
 double T;
 int N_T;
-int ORD = 0, BASE = 7;
+int ORD = 0;
 int time_scale = 1;
 int main_start_time;
 double amp_scale = 1;
@@ -20,9 +20,6 @@ string autofield = "";
 string automessage = "";
 
 time_t now = 0;
-DipoleSet dipoles_upper;
-EVector H0D;
-// EDMatrix C;
 array<ECovector, DIM> anal_pop;
 
 int main(int argc, char** argv) {
@@ -30,6 +27,8 @@ int main(int argc, char** argv) {
         main_start_time = time(&now);  // this will only work until 2038 so be careful
         assert(now == main_start_time);
         ptime();
+
+        gen_hamiltonians();
 
         cout << "5 initial prompts: tarr, tscale, ascale, printffts, allstates" << endl;
 
@@ -82,32 +81,6 @@ int main(int argc, char** argv) {
         }
     }
     string message_backup = message;
-
-    // EMatrix2 I2 = EMatrix2::Identity();
-    EMatrix2 Sx, Sy, Sz;
-    Sx << 0,   1,
-          1,   0;
-    Sy << 0, -1i,
-          1i,  0;
-    Sz << 1,   0,
-          0,  -1;
-    Sx /= 2, Sy /= 2, Sz /= 2;
-
-    // H0D = (omega_1 * kroneckerProduct(Sz, I2).eval() + omega_2 * kroneckerProduct(I2, Sz).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
-    // dipoles_upper[0] = (kroneckerProduct(Sx, I2) + kroneckerProduct(I2, Sx)).triangularView<Eigen::Upper>();
-    // dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
-
-    double omega_1 = 1;
-    H0D = (-1 * omega_1 * 2 * Sz).diagonal();
-    dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
-    dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
-
-    // H0D << 0,   0.0082,  .016;
-
-    // dipoles_upper[0] <<  0,   0.061,  -.013,
-    //                    0,   0,  .083,
-    //                    0,  0,  0;
-
 
     FieldSet fields{};
     // string ffn = string(argv[1]);
@@ -227,69 +200,7 @@ int main(int argc, char** argv) {
 
     cout << "Successfully read fields." << endl;
 
-    EMatrix upper_triangle_ones = EMatrix::Zero();
-    for (int i = 1; i < DIM; ++i)
-        for (int j = 0; j < i; ++j)
-            for (EMatrix& upper : dipoles_upper)
-                if (upper(i, j) != upper(j, i))
-                    upper_triangle_ones(i, j) = 1.;
-
-    EMatrix encoding_integers;
-    enum enc_scheme { other, order, partial, full };
-    enum enc_type { hermitian, antihermitian, nonhermitian };
-    const enc_scheme cur_scheme = partial;
-    const enc_type cur_type = nonhermitian;
-
-    if (cur_scheme == other) {
-
-    } else if (cur_scheme == order) {
-        encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
-    } else if (cur_scheme == partial) {
-        // encoding_integers << 
-        //         0, 2, 3,
-        //         0, 0, 4,
-        //         1, 0, 0;
-        encoding_integers << 
-                0, 0,
-                1, 0;
-    } else if (cur_scheme == full) {
-        if (cur_type == nonhermitian) {
-            encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
-        } else {
-            encoding_integers = upper_triangle_ones;
-        }
-        int ctr = 0;
-
-        for (Complex& d : encoding_integers.reshaped())
-            if (d.real() != 0)
-                d = (double) ++ctr;
-    } else {
-        throw runtime_error("Unsupported encoding scheme.");
-    }
-
-    if (cur_type == hermitian) {
-        encoding_integers = (encoding_integers - encoding_integers.adjoint()).eval();
-    } else if (cur_type == antihermitian) {
-        encoding_integers = (encoding_integers + encoding_integers.adjoint()).eval();
-    } else if (cur_type == nonhermitian) {
-        // do nothing
-    } else {
-        throw runtime_error("Unsupported encoding type.");
-    }
-
-    if (cur_scheme != other) {
-        DOUBLE_TYPE max_ord = 0;
-        for (Complex& c : encoding_integers.reshaped()) {
-            if (c.real() != 0) {
-                max_ord = max(max_ord, abs(c.real()));
-                c = copysign(round(pow(BASE, (double) abs(c.real()) - 1)), c.real());
-            }
-        }
-        ORD = 1 << (int) ceil(log2(pow(BASE, (double) max_ord)));
-    } else {
-        if (ORD == 0)
-            throw runtime_error("ORD not set...");
-    }
+    EMatrix encoding_integers = gen_encoding_integers();
 
     cout << "Running end analysis..." << endl;
     vector<CArray> anal_res_end = run_order_analysis(print_ffts, fields, psi_i, cur_type == hermitian, encoding_integers);
@@ -452,6 +363,64 @@ void run_prompts(string& message) {
             amp_scale = 1;
         }
     }
+}
+
+EMatrix gen_encoding_integers() {
+	EMatrix upper_triangle_ones = EMatrix::Zero();
+    for (int i = 1; i < DIM; ++i)
+        for (int j = 0; j < i; ++j)
+            for (EMatrix& upper : dipoles_upper)
+                if (upper(i, j) != upper(j, i))
+                    upper_triangle_ones(i, j) = 1.;
+
+    EMatrix encoding_integers;
+
+    if (cur_scheme == other) {
+
+    } else if (cur_scheme == order) {
+        encoding_integers = upper_triangle_ones + (cur_type == nonhermitian) * upper_triangle_ones.transpose();
+    } else if (cur_scheme == partial) {
+        encoding_integers = get_partial_encoding_integers();
+    } else if (cur_scheme == full) {
+        if (cur_type == nonhermitian) {
+            encoding_integers = upper_triangle_ones + upper_triangle_ones.adjoint();
+        } else {
+            encoding_integers = upper_triangle_ones;
+        }
+        int ctr = 0;
+
+        for (Complex& d : encoding_integers.reshaped())
+            if (d.real() != 0)
+                d = (double) ++ctr;
+    } else {
+        throw runtime_error("Unsupported encoding scheme.");
+    }
+
+    if (cur_type == hermitian) {
+        encoding_integers = (encoding_integers - encoding_integers.adjoint()).eval();
+    } else if (cur_type == antihermitian) {
+        encoding_integers = (encoding_integers + encoding_integers.adjoint()).eval();
+    } else if (cur_type == nonhermitian) {
+        // do nothing
+    } else {
+        throw runtime_error("Unsupported encoding type.");
+    }
+
+    if (cur_scheme != other) {
+        DOUBLE_TYPE max_ord = 0;
+        for (Complex& c : encoding_integers.reshaped()) {
+            if (c.real() != 0) {
+                max_ord = max(max_ord, abs(c.real()));
+                c = copysign(round(pow(BASE, (double) abs(c.real()) - 1)), c.real());
+            }
+        }
+        ORD = 1 << (int) ceil(log2(pow(BASE, (double) max_ord)));
+    } else {
+        if (ORD == 0)
+            throw runtime_error("ORD not set...");
+    }
+
+    return encoding_integers;
 }
 
 double envelope_funct(double t) {
