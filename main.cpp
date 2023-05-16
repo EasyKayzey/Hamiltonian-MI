@@ -136,8 +136,8 @@ int main(int argc, char** argv) {
 
 
     if (read_field_file(path + ffn + ".txt", fields) == -1) {
-        cout << "Field file not found. Restarting." << endl;
-        return main(argc, argv);
+        cout << "Field file not found. Exiting..." << endl;
+        exit(-1);
     }
 
     cout << "Successfully read fields." << endl;
@@ -363,7 +363,7 @@ int read_field_file(string filename, FieldSet& fields) {
         } catch (runtime_error& e) {
             cout << "Reading fields failed... Error: " << e.what() << endl;
             cerr << "Reading fields failed... Error: " << e.what() << endl;
-            exit(0);
+            exit(-1);
         }
     } else {
         return -1;
@@ -448,7 +448,7 @@ pair<pair<EMatrix, EMatrix>, EVector> diag_vec(const EMatrix& mu, const EDMatrix
     schur.compute(mu, true);
     if (schur.info() != Success) {
         cout << "Schur computation failed." << endl;
-        exit(1);
+        exit(-1);
     }
 
 //    cout << "C: " << endl << C.toDenseMatrix() << endl;
