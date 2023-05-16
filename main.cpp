@@ -269,6 +269,7 @@ int autorun_states(int argc, char** argv) {
 
     for (int i = 0; i < DIM; ++i) {
         autostate = i;
+        cout << "Running initial state " << i << "..." << endl;
         main(argc, argv);
     }
 
