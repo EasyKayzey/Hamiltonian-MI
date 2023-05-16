@@ -121,10 +121,10 @@ int main(int argc, char** argv) {
         cin >> init_state_str;
         if (!init_state_str.empty() && init_state_str != "0") {
             init_state = stoi(init_state_str);
-            message += (message.length() == 0 ? "" : "_") + init_state_str;
         } else {
             init_state = 0;
         }
+        message += (message.length() == 0 ? "S" : "_S") + to_string(init_state);
     } else {
         init_state = autostate;
         message += (message.length() == 0 ? "AS" : "_AS") + to_string(init_state);
