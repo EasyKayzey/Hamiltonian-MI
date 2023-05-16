@@ -37,7 +37,7 @@ using namespace std;
 using namespace Eigen;
 
 // User constants (change me!)
-const int DIM = 2;
+const int DIM = 4;
 const int N_TO = 1;
 const int N_FIELDS = 2;
 const int BASE = 7;
@@ -78,7 +78,7 @@ DipoleSet dipoles_upper;
 EVector H0D;
 void gen_hamiltonians() {
 
-	// EMatrix2 I2 = EMatrix2::Identity();
+    EMatrix2 I2 = EMatrix2::Identity();
     EMatrix2 Sx, Sy, Sz;
     Sx << 0,   1,
           1,   0;
@@ -88,14 +88,17 @@ void gen_hamiltonians() {
           0,  -1;
     Sx /= 2, Sy /= 2, Sz /= 2;
 
-    // H0D = (omega_1 * kroneckerProduct(Sz, I2).eval() + omega_2 * kroneckerProduct(I2, Sz).eval() + J12 * kroneckerProduct(z2, z2).eval()).diagonal();
-    // dipoles_upper[0] = (kroneckerProduct(Sx, I2) + kroneckerProduct(I2, Sx)).triangularView<Eigen::Upper>();
-    // dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
+    double omega_1 = 2* MY_PI *15;
+    double omega_2 = -2* MY_PI *21;
+    double J12 = 2* MY_PI * 1;
+    H0D = (omega_1 * kroneckerProduct(Sz, I2).eval() + omega_2 * kroneckerProduct(I2, Sz).eval() + J12 * kroneckerProduct(Sz, Sz).eval()).diagonal();
+    dipoles_upper[0] = (kroneckerProduct(Sx, I2) + kroneckerProduct(I2, Sx)).triangularView<Eigen::Upper>();
+    dipoles_upper[1] = (kroneckerProduct(Sy, I2) + kroneckerProduct(I2, Sy)).triangularView<Eigen::Upper>();
 
-    double omega_1 = 1;
-    H0D = (-1 * omega_1 * 2 * Sz).diagonal();
-    dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
-    dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
+//        double omega_1 = 0;
+//    H0D = (-1 * omega_1 * 2 * Sz).diagonal();
+//    dipoles_upper[0] = (2 * Sx).triangularView<Eigen::Upper>();
+//    dipoles_upper[1] = (2 * Sy).triangularView<Eigen::Upper>();
 
     // dipoles_upper[0] <<  0,   0.061,  -.013,
     //                    0,   0,  .083,
@@ -105,13 +108,30 @@ void gen_hamiltonians() {
 // Encoding (change me!)
 enum enc_scheme { other, order, partial, full };
 enum enc_type { hermitian, antihermitian, nonhermitian };
+
 const enc_scheme cur_scheme = partial;
 const enc_type cur_type = nonhermitian;
+
 EMatrix get_partial_encoding_integers() {
 	EMatrix partial_encoding_integers;
-	partial_encoding_integers << 
-		0, 0, 
-		1, 0;
+//	partial_encoding_integers <<
+//		0, 0,
+//		1, 0;
+    // partial_encoding_integers <<
+    //         0, 2, 3,
+    //         0, 0, 4,
+    //         1, 0, 0;
+//        partial_encoding_integers <<
+//                0, 0, 0, 0,
+//                0, 0, 0, 0,
+//                1, 0, 0, 0,
+//                0, 0, 0, 0;
+    partial_encoding_integers <<
+            0, 2, 3, 0,
+            0, 0, 0, 4,
+            1, 0, 0, 5,
+            0, 0, 0, 0;
+
 	return partial_encoding_integers;
 }
 
