@@ -396,7 +396,7 @@ int autorun_states(int argc, char** argv) {
     cin >> autofield;
     if (autofield.empty() || autofield == "#")
         throw runtime_error("Need field file name!");
-    else if (ffn == "exit")
+    else if (autofield == "exit")
         return 0;
 
     automessage = "";
